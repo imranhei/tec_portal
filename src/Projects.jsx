@@ -24,9 +24,16 @@ import {
 import { fakeData, usStates } from "./makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ViewIcon from "@mui/icons-material/Visibility";
+import { useNavigate } from "react-router-dom";
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
+  const navigate = useNavigate();
+  const handleView = (row) => {
+    
+    navigate("/projects/view", { state: { row } });
+  };
 
   const columns = useMemo(
     () => [
@@ -56,6 +63,10 @@ const Example = () => {
         accessorKey: "assignedHours",
         header: "Assigned Hours",
         // muiEditTextFieldProps: {
+        //   type: "number",
+        //   required: true,
+        // },
+        // muiEditTextFieldProps: {
         //   required: true,
         //   error: !!validationErrors?.lastName,
         //   helperText: validationErrors?.lastName,
@@ -70,6 +81,10 @@ const Example = () => {
       {
         accessorKey: "completedHours",
         header: "Completed Hours",
+        // muiEditTextFieldProps: {
+        //   type: "number",
+        //   required: true,
+        // },
         // muiEditTextFieldProps: {
         //   type: "email",
         //   required: true,
@@ -86,6 +101,10 @@ const Example = () => {
       {
         accessorKey: "startDate",
         header: "Start Date",
+        // muiEditTextFieldProps: {
+        //   type: "date",
+        //   required: true,
+        // },
         // editVariant: "select",
         // editSelectOptions: usStates,
         // muiEditTextFieldProps: {
@@ -97,6 +116,15 @@ const Example = () => {
       {
         accessorKey: "endDate",
         header: "End Date",
+        format: (date) => {
+          // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
+          const [month, day, year] = date.split('-');
+          return `${month}/${day}/${year}`;
+        },
+        muiEditTextFieldProps: {
+          type: "date",
+          required: true,
+        },
         // editVariant: "select",
         // editSelectOptions: usStates,
         // muiEditTextFieldProps: {
@@ -108,6 +136,10 @@ const Example = () => {
       {
         accessorKey: "assignedEmployee",
         header: "Assigned Employee",
+        // muiEditTextFieldProps: {
+        //   type: "number",
+        //   required: true,
+        // },
         // editVariant: "select",
         // editSelectOptions: usStates,
         // muiEditTextFieldProps: {
@@ -140,11 +172,13 @@ const Example = () => {
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
+    
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
     }
     setValidationErrors({});
+    console.log(values)
     await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
@@ -219,7 +253,12 @@ const Example = () => {
       </>
     ),
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: "flex", gap: "0rem" }}>
+        <Tooltip title="View">
+          <IconButton onClick={() => handleView(row.original)}>
+            <ViewIcon />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -308,7 +347,7 @@ function useUpdateUser() {
     onMutate: (newUserInfo) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.id === newUserInfo.id ? newUserInfo : prevUser
+          prevUser.job_id === newUserInfo.job_id ? newUserInfo : prevUser
         )
       );
     },
@@ -328,7 +367,7 @@ function useDeleteUser() {
     //client side optimistic update
     onMutate: (userId) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.filter((user) => user.id !== userId)
+        prevUsers?.filter((user) => user.job_id !== userId)
       );
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -339,7 +378,7 @@ const queryClient = new QueryClient();
 
 const Projects = () => (
   //Put this with your other react-query providers near root of your app
-  <div className="container mx-auto">
+  <div className="w-full">
     <QueryClientProvider client={queryClient}>
       <Example />
     </QueryClientProvider>
@@ -358,11 +397,12 @@ const validateEmail = (email) =>
     );
 
 function validateUser(user) {
+  console.log(user)
   return {
-    firstName: !validateRequired(user.firstName)
-      ? "First Name is Required"
+    job_id: !validateRequired(user.job_id)
+      ? "Job Id is Required"
       : "",
-    lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
-    email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
+    // lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
+    // email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
   };
 }
