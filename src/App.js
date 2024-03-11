@@ -7,33 +7,44 @@ import { useEffect, useState } from "react";
 import User from "./components/User";
 import Sidebar from "./components/Sidebar";
 import View from "./components/View";
+import CurrentJobs from "./components/CurrentJobs";
+import History from "./components/History";
+import { useSelector } from "react-redux";
 
 function App() {
   const navigate = useNavigate();
-  const login = true;
+  const user = useSelector((state) => state.userData.loggedIn);
+  const [login, setLogin] = useState(false);
+
+  useEffect(() => {
+    setLogin(user);
+  }, [user]);
 
   useEffect(() => {
     if (!login) {
-      console.log("hello");
       navigate("/login");
     }
   }, [login]);
 
   return (
     <div className="flex">
-      <div className={`fixed h-screen overflow-y-auto z-20 w-48`}>
-        <Sidebar />
-      </div>
-      <div className="flex-1 overflow-auto ml-48">
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/" element={<Projects />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/user" element={<User />} />
-        <Route path="/projects/view" element={<View />} />
-      </Routes>
+      {login && (
+        <div className={`fixed h-screen overflow-y-auto z-20 w-48`}>
+          <Sidebar />
+        </div>
+      )}
+      <div className="flex-1 overflow-auto ml-48 p-4">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/" element={<Projects />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/user" element={<User />} />
+          <Route path="/projects/view" element={<View />} />
+          <Route path="/current-jobs" element={<CurrentJobs />} />
+          <Route path="/history" element={<History />} />
+        </Routes>
       </div>
     </div>
   );

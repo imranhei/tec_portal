@@ -10,8 +10,8 @@ export default function View() {
   }
 
   return (
-    <div>
-      <h2>Project Name: {row.project}</h2>
+    <div className='p-6'>
+      <h2 className='text-2xl font-bold pb-4'>Project: {row.project}</h2>
       <p>Assigned Hours: {row.assignedHours}</p>
       <p>Completed Hours: {row.completedHours}</p>
       <p>Start Date: {row.startDate}</p>

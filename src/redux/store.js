@@ -1,10 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
-// import userData from './user'
+import userData from './auth'
 // import operatorData from './operator'
 
 export const store = configureStore({
   reducer: {
-    // userData: userData,
+    userData: userData,
     // operatorData: operatorData,
   },
 })

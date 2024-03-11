@@ -39,13 +39,13 @@ const Example = () => {
     () => [
       {
         accessorKey: "job_id",
-        header: "Job Id",
+        header: "Job No",
         enableEditing: true,
         size: 80,
       },
       {
-        accessorKey: "project",
-        header: "Project",
+        accessorKey: "job_location",
+        header: "Location",
         // muiEditTextFieldProps: {
         //   required: true,
         //   error: !!validationErrors?.firstName,
@@ -60,8 +60,8 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "assignedHours",
-        header: "Assigned Hours",
+        accessorKey: "total_hours",
+        header: "Total Hours",
         // muiEditTextFieldProps: {
         //   type: "number",
         //   required: true,
@@ -79,8 +79,8 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "completedHours",
-        header: "Completed Hours",
+        accessorKey: "start_date",
+        header: "Start Date",
         // muiEditTextFieldProps: {
         //   type: "number",
         //   required: true,
@@ -99,8 +99,8 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "startDate",
-        header: "Start Date",
+        accessorKey: "completion_date",
+        header: "Completion Date",
         // muiEditTextFieldProps: {
         //   type: "date",
         //   required: true,
@@ -114,15 +114,15 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "endDate",
-        header: "End Date",
+        accessorKey: "attachment",
+        header: "Attachment",
         format: (date) => {
           // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
           const [month, day, year] = date.split('-');
           return `${month}/${day}/${year}`;
         },
         muiEditTextFieldProps: {
-          type: "date",
+          // type: "date",
           required: true,
         },
         // editVariant: "select",
@@ -133,21 +133,21 @@ const Example = () => {
         //   helperText: validationErrors?.state,
         // },
       },
-      {
-        accessorKey: "assignedEmployee",
-        header: "Assigned Employee",
-        // muiEditTextFieldProps: {
-        //   type: "number",
-        //   required: true,
-        // },
-        // editVariant: "select",
-        // editSelectOptions: usStates,
-        // muiEditTextFieldProps: {
-        //   select: true,
-        //   error: !!validationErrors?.state,
-        //   helperText: validationErrors?.state,
-        // },
-      },
+      // {
+      //   accessorKey: "assignedEmployee",
+      //   header: "Assigned Employee",
+      //   // muiEditTextFieldProps: {
+      //   //   type: "number",
+      //   //   required: true,
+      //   // },
+      //   // editVariant: "select",
+      //   // editSelectOptions: usStates,
+      //   // muiEditTextFieldProps: {
+      //   //   select: true,
+      //   //   error: !!validationErrors?.state,
+      //   //   helperText: validationErrors?.state,
+      //   // },
+      // },
     ],
     [validationErrors]
   );

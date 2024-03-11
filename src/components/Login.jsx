@@ -1,18 +1,20 @@
-"use client";
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setLoggedIn } from "../redux/auth";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
 
   const handleLogin = (event) => {
     event.preventDefault();
 
     if (email === "admin@gmail.com" && password === "12345678") {
       console.log(email, password);
+      dispatch(setLoggedIn(true));
       navigate("/");
     } else {
       alert("Invalid email or password");
