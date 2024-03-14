@@ -1007,6 +1007,129 @@
   {"job_id":"CN-15","job_location":"Meaux","total_hours":67,"start_date":"7/1/2023","completion_date":"10/16/2023","attachment":null},
   {"job_id":"PE-CAJ","job_location":"Dasol","total_hours":16,"start_date":"7/2/2023","completion_date":"7/9/2023","attachment":"SPJR"}]
   
+  //employee details in a project
+  export const employeeDetails = [{
+    "em_name": "Mal Creeboe",
+    "ass_date": "06/27/2023",
+    "ass_hours": 57,
+    "com_hours": 55,
+    "email": "mcreeboe0@networksolutions.com"
+  }, {
+    "em_name": "Raffarty Wretham",
+    "ass_date": "06/14/2023",
+    "ass_hours": 44,
+    "com_hours": 24,
+    "email": "rwretham1@si.edu"
+  }, {
+    "em_name": "Ruperta Finnis",
+    "ass_date": "09/19/2023",
+    "ass_hours": 88,
+    "com_hours": 29,
+    "email": "rfinnis2@skyrock.com"
+  }, {
+    "em_name": "Tiffani Lynn",
+    "ass_date": "06/28/2023",
+    "ass_hours": 19,
+    "com_hours": 61,
+    "email": "tlynn3@a8.net"
+  }, {
+    "em_name": "Anastasia Glendza",
+    "ass_date": "11/09/2023",
+    "ass_hours": 88,
+    "com_hours": 66,
+    "email": "aglendza4@weebly.com"
+  }, {
+    "em_name": "Barbabra Sails",
+    "ass_date": "05/21/2023",
+    "ass_hours": 35,
+    "com_hours": 7,
+    "email": "bsails5@theglobeandmail.com"
+  }, {
+    "em_name": "Carmelia Crannell",
+    "ass_date": "10/24/2023",
+    "ass_hours": 49,
+    "com_hours": 31,
+    "email": "ccrannell6@sbwire.com"
+  }, {
+    "em_name": "Cyrillus Coffee",
+    "ass_date": "05/04/2023",
+    "ass_hours": 84,
+    "com_hours": 71,
+    "email": "ccoffee7@rediff.com"
+  }, {
+    "em_name": "Dulcine Orrin",
+    "ass_date": "12/07/2023",
+    "ass_hours": 15,
+    "com_hours": 20,
+    "email": "dorrin8@who.int"
+  }, {
+    "em_name": "Ly Ayers",
+    "ass_date": "06/23/2023",
+    "ass_hours": 28,
+    "com_hours": 49,
+    "email": "layers9@live.com"
+  }, {
+    "em_name": "Abner Beggio",
+    "ass_date": "09/20/2023",
+    "ass_hours": 53,
+    "com_hours": 94,
+    "email": "abeggioa@walmart.com"
+  }, {
+    "em_name": "Kiel Scown",
+    "ass_date": "03/08/2024",
+    "ass_hours": 31,
+    "com_hours": 57,
+    "email": "kscownb@etsy.com"
+  }, {
+    "em_name": "Peri Chicco",
+    "ass_date": "04/04/2023",
+    "ass_hours": 66,
+    "com_hours": 79,
+    "email": "pchiccoc@comcast.net"
+  }, {
+    "em_name": "Roxanna Furlonge",
+    "ass_date": "11/30/2023",
+    "ass_hours": 27,
+    "com_hours": 40,
+    "email": "rfurlonged@devhub.com"
+  }, {
+    "em_name": "Carline Greatrex",
+    "ass_date": "05/06/2023",
+    "ass_hours": 84,
+    "com_hours": 71,
+    "email": "cgreatrexe@latimes.com"
+  }, {
+    "em_name": "Beatrice Tarburn",
+    "ass_date": "01/27/2024",
+    "ass_hours": 100,
+    "com_hours": 26,
+    "email": "btarburnf@reverbnation.com"
+  }, {
+    "em_name": "Lyndy Clapp",
+    "ass_date": "08/31/2023",
+    "ass_hours": 71,
+    "com_hours": 82,
+    "email": "lclappg@alexa.com"
+  }, {
+    "em_name": "Charmian Francescone",
+    "ass_date": "09/25/2023",
+    "ass_hours": 12,
+    "com_hours": 25,
+    "email": "cfrancesconeh@google.de"
+  }, {
+    "em_name": "Rosaline Freddi",
+    "ass_date": "09/26/2023",
+    "ass_hours": 47,
+    "com_hours": 36,
+    "email": "rfreddii@cam.ac.uk"
+  }, {
+    "em_name": "Valma Beedle",
+    "ass_date": "04/30/2023",
+    "ass_hours": 76,
+    "com_hours": 63,
+    "email": "vbeedlej@tiny.cc"
+  }]
+  
   //50 us states array
   export const usStates = [
     'Alabama',

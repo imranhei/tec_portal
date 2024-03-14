@@ -33,7 +33,7 @@ function App() {
           <Sidebar />
         </div>
       )}
-      <div className="flex-1 overflow-auto ml-48 p-4">
+      <div className={`flex-1 overflow-auto ${login ? 'ml-48' : 'ml-0'} p-4 bg-slate-100 min-h-screen`}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/jobs" element={<Jobs />} />

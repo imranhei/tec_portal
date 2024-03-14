@@ -21,7 +21,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { fakeData, usStates } from "./makeData";
+import { employeeDetails, usStates } from "../makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
@@ -32,16 +32,16 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
-  const navigate = useNavigate();
-  const handleView = (row) => {
-    navigate("/projects/view", { state: { row } });
-  };
+//   const navigate = useNavigate();
+//   const handleView = (row) => {
+//     navigate("/projects/view", { state: { row } });
+//   };
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: "job_id",
-        header: "Job No",
+        accessorKey: "em_name",
+        header: "Name",
         enableEditing: true,
         size: 80,
         // enableColumnFilter: false,
@@ -50,8 +50,8 @@ const Example = () => {
         // ),
       },
       {
-        accessorKey: "job_location",
-        header: "Location",
+        accessorKey: "ass_date",
+        header: "Assign Date",
         // muiEditTextFieldProps: {
         //   required: true,
         //   error: !!validationErrors?.firstName,
@@ -66,122 +66,23 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "total_hours",
-        header: "Total Hours",
+        accessorKey: "ass_hours",
+        header: "Assigned Hours",
         filterVariant: "range",
         filterFn: "between",
-        // muiEditTextFieldProps: {
-        //   type: "number",
-        //   required: true,
-        // },
-        // muiEditTextFieldProps: {
-        //   required: true,
-        //   error: !!validationErrors?.lastName,
-        //   helperText: validationErrors?.lastName,
-        //   //remove any previous validation errors when user focuses on the input
-        //   onFocus: () =>
-        //     setValidationErrors({
-        //       ...validationErrors,
-        //       lastName: undefined,
-        //     }),
-        // },
       },
       {
-        accessorFn: (originalRow) => new Date(originalRow.start_date),
-        id: "start_date",
-        // accessorKey: "start_date",
-        header: "Start Date",
-        filterVariant: "date-range",
-        muiEditTextFieldProps: {
-            type: "date",
-            required: true,
-          },
-        Cell: ({ cell }) => cell.getValue().toLocaleDateString(),
-
-        // Cell: ({ renderedCellValue }) => {const dateParts = renderedCellValue.split('/'); // Split the date string by '/'
-        // const month = parseInt(dateParts[0], 10); // Extract month
-        // const day = parseInt(dateParts[1], 10); // Extract day
-        // const year = parseInt(dateParts[2], 10); // Extract year
-
-        // // Create a new Date object using the extracted components
-        // const dateObject = new Date(year, month - 1, day); // Month in Date object is zero-based, so subtract 1 from month
-
-        // // Format the date as desired (e.g., MM/DD/YYYY)
-        // const formattedDate = `${dateObject.getMonth() + 1}/${dateObject.getDate()}/${dateObject.getFullYear()}`;
-        // console.log(typeof(formattedDate))
-        // return (
-        //   <span>{formattedDate}</span>
-        // );}
-        // muiEditTextFieldProps: {
-        //   type: "number",
-        //   required: true,
-        // },
-        // muiEditTextFieldProps: {
-        //   type: "email",
-        //   required: true,
-        //   error: !!validationErrors?.email,
-        //   helperText: validationErrors?.email,
-        //   //remove any previous validation errors when user focuses on the input
-        //   onFocus: () =>
-        //     setValidationErrors({
-        //       ...validationErrors,
-        //       email: undefined,
-        //     }),
-        // },
+        accessorKey: "com_hours",
+        header: "Completed Hours",
+        filterVariant: "range",
+        filterFn: "between",
       },
       {
-        accessorKey: "completion_date",
-        header: "Completion Date",
-        // muiEditTextFieldProps: {
-        //   type: "date",
-        //   required: true,
-        // },
-        // editVariant: "select",
-        // editSelectOptions: usStates,
-        // muiEditTextFieldProps: {
-        //   select: true,
-        //   error: !!validationErrors?.state,
-        //   helperText: validationErrors?.state,
-        // },
+        accessorKey: "email",
+        header: "email",
       },
-      {
-        accessorKey: "attachment",
-        header: "Attachment",
-
-        // format: (date) => {
-        //   // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
-        //   const [month, day, year] = date.split('-');
-        //   return `${month}/${day}/${year}`;
-        // },
-        muiEditTextFieldProps: {
-          // type: "date",
-          required: true,
-        },
-        // editVariant: "select",
-        // editSelectOptions: usStates,
-        // muiEditTextFieldProps: {
-        //   select: true,
-        //   error: !!validationErrors?.state,
-        //   helperText: validationErrors?.state,
-        // },
-      },
-      // {
-      //   accessorKey: "assignedEmployee",
-      //   header: "Assigned Employee",
-      //   // muiEditTextFieldProps: {
-      //   //   type: "number",
-      //   //   required: true,
-      //   // },
-      //   // editVariant: "select",
-      //   // editSelectOptions: usStates,
-      //   // muiEditTextFieldProps: {
-      //   //   select: true,
-      //   //   error: !!validationErrors?.state,
-      //   //   helperText: validationErrors?.state,
-      //   // },
-      // },
     ],
-    [validationErrors]
+    // [validationErrors]
   );
 
   //call CREATE hook
@@ -189,7 +90,7 @@ const Example = () => {
     useCreateUser();
   //call READ hook
   const {
-    data: fetchedUsers = [],
+    data: employeeDetails = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
@@ -210,7 +111,7 @@ const Example = () => {
       return;
     }
     setValidationErrors({});
-    console.log(values);
+    // console.log(values);
     await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
@@ -218,7 +119,7 @@ const Example = () => {
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
-    console.log(values)
+    // console.log(values)
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -231,13 +132,13 @@ const Example = () => {
   //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.job_id);
+      deleteUser(row.original.em_name);
     }
   };
 
   const table = useMaterialReactTable({
     columns,
-    data: fetchedUsers,
+    data: employeeDetails,
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
@@ -260,7 +161,7 @@ const Example = () => {
     //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Create New Job</DialogTitle>
+        <DialogTitle variant="h3">Add New Employee</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
@@ -274,7 +175,7 @@ const Example = () => {
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit Project</DialogTitle>
+        <DialogTitle variant="h3">Edit Employee</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -287,11 +188,11 @@ const Example = () => {
     ),
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "0rem" }}>
-        <Tooltip title="View">
+        {/* <Tooltip title="View">
           <IconButton onClick={() => handleView(row.original)}>
             <ViewIcon />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -317,7 +218,7 @@ const Example = () => {
           // );
         }}
       >
-        Create New Job
+        Add New Employee
       </Button>
     ),
     state: {
@@ -361,7 +262,7 @@ function useGetUsers() {
     queryFn: async () => {
       //send api request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(fakeData);
+      return Promise.resolve(employeeDetails);
     },
     refetchOnWindowFocus: false,
   });
@@ -380,7 +281,7 @@ function useUpdateUser() {
     onMutate: (newUserInfo) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.job_id === newUserInfo.job_id ? newUserInfo : prevUser
+          prevUser.em_name === newUserInfo.em_name ? newUserInfo : prevUser
         )
       );
     },
@@ -400,7 +301,7 @@ function useDeleteUser() {
     //client side optimistic update
     onMutate: (userId) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.filter((user) => user.job_id !== userId)
+        prevUsers?.filter((user) => user.em_name !== userId)
       );
     },
     // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
@@ -409,7 +310,7 @@ function useDeleteUser() {
 
 const queryClient = new QueryClient();
 
-const Projects = () => (
+const EmpDetails = () => (
   //Put this with your other react-query providers near root of your app
   <div className="w-full">
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -420,7 +321,7 @@ const Projects = () => (
   </div>
 );
 
-export default Projects;
+export default EmpDetails;
 
 const validateRequired = (value) => !!value.length;
 const validateEmail = (email) =>
@@ -434,7 +335,7 @@ const validateEmail = (email) =>
 function validateUser(user) {
   console.log(user);
   return {
-    job_id: !validateRequired(user.job_id) ? "Job Id is Required" : "",
+    em_name: !validateRequired(user.em_name) ? "Job Id is Required" : "",
     // lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
     // email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
   };
