@@ -33,7 +33,7 @@ export default function History() {
         <div className="flex border my-2 p-1 font-bold shadow bg-slate-200">
             <div className="w-1/6">Job No.</div>
             <div className="w-4/6">Job Description</div>
-            <div className="w-1/6">Working Hour</div>
+            <div className="w-1/6">Contribute</div>
         </div>
         {jobs.map((job, index) => (
           <div key={index} className="flex border my-2 p-1 shadow hover:bg-gray-100 cursor-pointer">

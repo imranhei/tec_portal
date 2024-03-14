@@ -27,11 +27,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
   const handleView = (row) => {
-    
     navigate("/projects/view", { state: { row } });
   };
 
@@ -42,6 +44,10 @@ const Example = () => {
         header: "Job No",
         enableEditing: true,
         size: 80,
+        // enableColumnFilter: false,
+        Cell: ({ renderedCellValue }) => (
+          <span>{renderedCellValue + "12"}</span>
+        ),
       },
       {
         accessorKey: "job_location",
@@ -62,6 +68,8 @@ const Example = () => {
       {
         accessorKey: "total_hours",
         header: "Total Hours",
+        filterVariant: "range",
+        filterFn: "between",
         // muiEditTextFieldProps: {
         //   type: "number",
         //   required: true,
@@ -79,8 +87,31 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "start_date",
+        accessorFn: (originalRow) => new Date(originalRow.start_date),
+        id: "start_date",
+        // accessorKey: "start_date",
         header: "Start Date",
+        filterVariant: "date-range",
+        muiEditTextFieldProps: {
+            type: "date",
+            required: true,
+          },
+        Cell: ({ cell }) => cell.getValue().toLocaleDateString(),
+
+        // Cell: ({ renderedCellValue }) => {const dateParts = renderedCellValue.split('/'); // Split the date string by '/'
+        // const month = parseInt(dateParts[0], 10); // Extract month
+        // const day = parseInt(dateParts[1], 10); // Extract day
+        // const year = parseInt(dateParts[2], 10); // Extract year
+
+        // // Create a new Date object using the extracted components
+        // const dateObject = new Date(year, month - 1, day); // Month in Date object is zero-based, so subtract 1 from month
+
+        // // Format the date as desired (e.g., MM/DD/YYYY)
+        // const formattedDate = `${dateObject.getMonth() + 1}/${dateObject.getDate()}/${dateObject.getFullYear()}`;
+        // console.log(typeof(formattedDate))
+        // return (
+        //   <span>{formattedDate}</span>
+        // );}
         // muiEditTextFieldProps: {
         //   type: "number",
         //   required: true,
@@ -116,11 +147,12 @@ const Example = () => {
       {
         accessorKey: "attachment",
         header: "Attachment",
-        format: (date) => {
-          // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
-          const [month, day, year] = date.split('-');
-          return `${month}/${day}/${year}`;
-        },
+
+        // format: (date) => {
+        //   // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
+        //   const [month, day, year] = date.split('-');
+        //   return `${month}/${day}/${year}`;
+        // },
         muiEditTextFieldProps: {
           // type: "date",
           required: true,
@@ -172,13 +204,13 @@ const Example = () => {
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
-    
+
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
     }
     setValidationErrors({});
-    console.log(values)
+    console.log(values);
     await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
@@ -186,6 +218,7 @@ const Example = () => {
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
+    console.log(values)
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -379,9 +412,11 @@ const queryClient = new QueryClient();
 const Projects = () => (
   //Put this with your other react-query providers near root of your app
   <div className="w-full">
-    <QueryClientProvider client={queryClient}>
-      <Example />
-    </QueryClientProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <QueryClientProvider client={queryClient}>
+        <Example />
+      </QueryClientProvider>
+    </LocalizationProvider>
   </div>
 );
 
@@ -397,11 +432,9 @@ const validateEmail = (email) =>
     );
 
 function validateUser(user) {
-  console.log(user)
+  console.log(user);
   return {
-    job_id: !validateRequired(user.job_id)
-      ? "Job Id is Required"
-      : "",
+    job_id: !validateRequired(user.job_id) ? "Job Id is Required" : "",
     // lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
     // email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
   };
