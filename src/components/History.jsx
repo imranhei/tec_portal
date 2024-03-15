@@ -27,7 +27,7 @@ export default function History() {
       ];
     
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white rounded">
       <h1 className="text-2xl">Previous Jobs</h1>
       <div className="mt-4 w-full">
         <div className="flex border my-2 p-1 font-bold shadow bg-slate-200">

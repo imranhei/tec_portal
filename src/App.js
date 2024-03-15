@@ -9,16 +9,14 @@ import Sidebar from "./components/Sidebar";
 import View from "./components/View";
 import CurrentJobs from "./components/CurrentJobs";
 import History from "./components/History";
+import Employee from "./components/Employee";
 import { useSelector } from "react-redux";
+import PrivateAdminRoute from "./components/PrivateAdminRoute";
+import PrivateUserRoute from "./components/PrivateUserRoute";
 
 function App() {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.userData.loggedIn);
-  const [login, setLogin] = useState(false);
-
-  useEffect(() => {
-    setLogin(user);
-  }, [user]);
+  const login = useSelector((state) => state.userData.loggedIn)
 
   useEffect(() => {
     if (!login) {
@@ -30,20 +28,29 @@ function App() {
     <div className="flex">
       {login && (
         <div className={`fixed h-screen overflow-y-auto z-20 w-48`}>
+          {/* Render Sidebar only if logged in */}
           <Sidebar />
         </div>
       )}
-      <div className={`flex-1 overflow-auto ${login ? 'ml-48' : 'ml-0'} p-4 bg-slate-100 min-h-screen`}>
+      <div
+        className={`flex-1 overflow-auto ${
+          login ? "ml-48" : "ml-0"
+        } p-4 bg-slate-100 min-h-screen`}
+      >
+        {/* Render different components based on user role */}
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/" element={<Projects />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/user" element={<User />} />
-          <Route path="/projects/view" element={<View />} />
-          <Route path="/current-jobs" element={<CurrentJobs />} />
-          <Route path="/history" element={<History />} />
+          <Route element={<PrivateAdminRoute />}>
+            <Route path="/" element={<Projects />} />
+            <Route path="/employee" element={<Employee />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/projects/view" element={<View />} />
+          </Route>
+          <Route element={<PrivateUserRoute />}>
+            <Route path="/current-jobs" element={<CurrentJobs />} />
+            <Route path="/history" element={<History />} />
+          </Route>
         </Routes>
       </div>
     </div>

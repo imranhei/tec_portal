@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { setLoggedIn } from "../redux/auth";
+import { useDispatch } from "react-redux";
+import { setUser } from "../redux/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,10 +13,14 @@ const Login = () => {
     event.preventDefault();
 
     if (email === "admin@gmail.com" && password === "12345678") {
-      console.log(email, password);
-      dispatch(setLoggedIn(true));
+      dispatch(setUser("admin"));
       navigate("/");
-    } else {
+    }
+    else if (email === "user@gmail.com" && password === "12345678") {
+      dispatch(setUser("user"));
+      navigate("/current-jobs");
+    }
+    else {
       alert("Invalid email or password");
     }
   };
