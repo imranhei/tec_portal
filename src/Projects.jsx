@@ -21,14 +21,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { fakeData, usStates } from "./makeData";
+// import { fakeData } from "./makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+const fakeData = [{"job_id":"US-NH","job_location":"Baohe","total_hours":34,"start_date":"2023-03-13","completion_date":"1/20/2024","attachment":null}];
+// const fakeData = []
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
@@ -70,10 +73,10 @@ const Example = () => {
         header: "Total Hours",
         filterVariant: "range",
         filterFn: "between",
-        // muiEditTextFieldProps: {
-        //   type: "number",
-        //   required: true,
-        // },
+        muiEditTextFieldProps: {
+          type: "number",
+          required: true,
+        },
         // muiEditTextFieldProps: {
         //   required: true,
         //   error: !!validationErrors?.lastName,
@@ -87,89 +90,37 @@ const Example = () => {
         // },
       },
       {
-        accessorFn: (originalRow) => new Date(originalRow.start_date),
+        // accessorFn: (originalRow) => new Date(originalRow?.start_date),
+        accessorFn: (originalRow) => {
+          console.log(originalRow)
+          return new Date(originalRow?.start_date)
+        },
         id: "start_date",
-        // accessorKey: "start_date",
         header: "Start Date",
         filterVariant: "date-range",
         muiEditTextFieldProps: {
-            type: "date",
-            required: true,
-          },
-        Cell: ({ cell }) => cell.getValue().toLocaleDateString(),
-
-        // Cell: ({ renderedCellValue }) => {const dateParts = renderedCellValue.split('/'); // Split the date string by '/'
-        // const month = parseInt(dateParts[0], 10); // Extract month
-        // const day = parseInt(dateParts[1], 10); // Extract day
-        // const year = parseInt(dateParts[2], 10); // Extract year
-
-        // // Create a new Date object using the extracted components
-        // const dateObject = new Date(year, month - 1, day); // Month in Date object is zero-based, so subtract 1 from month
-
-        // // Format the date as desired (e.g., MM/DD/YYYY)
-        // const formattedDate = `${dateObject.getMonth() + 1}/${dateObject.getDate()}/${dateObject.getFullYear()}`;
-        // console.log(typeof(formattedDate))
-        // return (
-        //   <span>{formattedDate}</span>
-        // );}
-        // muiEditTextFieldProps: {
-        //   type: "number",
-        //   required: true,
-        // },
-        // muiEditTextFieldProps: {
-        //   type: "email",
-        //   required: true,
-        //   error: !!validationErrors?.email,
-        //   helperText: validationErrors?.email,
-        //   //remove any previous validation errors when user focuses on the input
-        //   onFocus: () =>
-        //     setValidationErrors({
-        //       ...validationErrors,
-        //       email: undefined,
-        //     }),
-        // },
-      },
-      {
-        accessorKey: "completion_date",
-        header: "Completion Date",
-        // muiEditTextFieldProps: {
-        //   type: "date",
-        //   required: true,
-        // },
-        // editVariant: "select",
-        // editSelectOptions: usStates,
-        // muiEditTextFieldProps: {
-        //   select: true,
-        //   error: !!validationErrors?.state,
-        //   helperText: validationErrors?.state,
-        // },
-      },
-      {
-        accessorKey: "attachment",
-        header: "Attachment",
-
-        // format: (date) => {
-        //   // Assuming date is a string representing a date in ISO format (e.g., "2022-03-15")
-        //   const [month, day, year] = date.split('-');
-        //   return `${month}/${day}/${year}`;
-        // },
-        muiEditTextFieldProps: {
-          // type: "date",
+          type: "date", // Or "datetime" for date and time
           required: true,
         },
-        // editVariant: "select",
-        // editSelectOptions: usStates,
-        // muiEditTextFieldProps: {
-        //   select: true,
-        //   error: !!validationErrors?.state,
-        //   helperText: validationErrors?.state,
-        // },
+        Cell: ({ cell }) => {
+          return cell.getValue()?.toISOString().slice(0, 10)
+        },
       },
       // {
-      //   accessorKey: "assignedEmployee",
-      //   header: "Assigned Employee",
+      //   accessorFn: (originalRow) => new Date(originalRow?.completion_date),
+      //   id: "completion_date",
+      //   header: "Completion Date",
+      //   filterVariant: "date-range",
+      //   muiEditTextFieldProps: {
+      //       type: "date",
+      //       required: true,
+      //     },
+      //     Cell: ({ cell }) => {
+      //       console.log(cell.getValue()?.toLocaleDateString())
+      //       return cell.getValue()?.toLocaleDateString()
+      //     }
       //   // muiEditTextFieldProps: {
-      //   //   type: "number",
+      //   //   type: "date",
       //   //   required: true,
       //   // },
       //   // editVariant: "select",
@@ -180,6 +131,21 @@ const Example = () => {
       //   //   helperText: validationErrors?.state,
       //   // },
       // },
+      {
+        accessorKey: "attachment",
+        header: "Attachment",
+        muiEditTextFieldProps: {
+          type: "file",
+          required: true,
+        },
+        // editVariant: "select",
+        // editSelectOptions: usStates,
+        // muiEditTextFieldProps: {
+        //   select: true,
+        //   error: !!validationErrors?.state,
+        //   helperText: validationErrors?.state,
+        // },
+      },
     ],
     [validationErrors]
   );
@@ -210,15 +176,14 @@ const Example = () => {
       return;
     }
     setValidationErrors({});
-    console.log(values);
     await createUser(values);
+    console.log(values)
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
     const newValidationErrors = validateUser(values);
-    console.log(values)
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -278,7 +243,7 @@ const Example = () => {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents} {/* or render custom edit components here */ console.log(row.original)}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -342,6 +307,8 @@ function useCreateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
+      const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
+      console.log("Previous Users:", prevUsers);
       queryClient.setQueryData(["users"], (prevUsers) => [
         ...prevUsers,
         {
@@ -378,6 +345,7 @@ function useUpdateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
+      console.log(newUserInfo)
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
           prevUser.job_id === newUserInfo.job_id ? newUserInfo : prevUser
@@ -432,7 +400,6 @@ const validateEmail = (email) =>
     );
 
 function validateUser(user) {
-  console.log(user);
   return {
     job_id: !validateRequired(user.job_id) ? "Job Id is Required" : "",
     // lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",

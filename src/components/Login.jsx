@@ -12,17 +12,44 @@ const Login = () => {
   const handleLogin = (event) => {
     event.preventDefault();
 
-    if (email === "admin@gmail.com" && password === "12345678") {
-      dispatch(setUser("admin"));
-      navigate("/");
-    }
-    else if (email === "user@gmail.com" && password === "12345678") {
-      dispatch(setUser("user"));
-      navigate("/current-jobs");
-    }
-    else {
-      alert("Invalid email or password");
-    }
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+
+    fetch("https://backend.tec.ampectech.com/api/auth/login", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json()) // Parse JSON response
+      .then((data) => {
+        console.log(data);
+        if (data.user) {
+          dispatch(setUser(data.user));
+          navigate("/");
+        } else {
+          alert("Invalid email or password");
+        }
+      }) // Log parsed JSON data
+      .catch((error) => console.error("Error:", error)); // Handle any errors
+
+    // if (response.ok) {
+    //   dispatch(setUser(email));
+    //   navigate("/");
+    // } else {
+    //   alert("Invalid email or password");
+    // }
+
+    // if (email === "admin@gmail.com" && password === "12345678") {
+    //   dispatch(setUser("admin"));
+    //   navigate("/");
+    // }
+    // else if (email === "user@gmail.com" && password === "12345678") {
+    //   dispatch(setUser("user"));
+    //   navigate("/current-jobs");
+    // }
+    // else {
+    //   alert("Invalid email or password");
+    // }
   };
 
   return (
@@ -72,7 +99,7 @@ const Login = () => {
           </div>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-700">
+        {/* <p className="mt-4 text-sm text-center text-gray-700">
           Don't have an account?{" "}
           <Link
             to="/register"
@@ -80,7 +107,7 @@ const Login = () => {
           >
             Sign up
           </Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );

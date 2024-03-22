@@ -86,6 +86,7 @@ const Register = () => {
             Log in
           </Link>
         </p>
+        <input type="date" value="2021-11-22" onChange={e => console.log(e.target.value)}/>
       </div>
     </div>
   );

@@ -41,13 +41,15 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<PrivateAdminRoute />}>
+          {/* Only admins are allowed to view this routes */}
+            <Route path="/register" element={<Register />} />
             <Route path="/" element={<Projects />} />
             <Route path="/employee" element={<Employee />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/projects/view" element={<View />} />
           </Route>
           <Route element={<PrivateUserRoute />}>
+          {/* Only users are allowed to view this routes */}
             <Route path="/current-jobs" element={<CurrentJobs />} />
             <Route path="/history" element={<History />} />
           </Route>
