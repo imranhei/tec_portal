@@ -28,16 +28,33 @@ import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-const fakeData = [{"job_id":"US-NH","job_location":"Baohe","total_hours":34,"start_date":"2023-03-13","completion_date":"1/20/2024","attachment":null}];
+import CreateJobModal from "./modal/CreateJobModal";
+
+const fakeData = [
+  {
+    job_id: "US-NH",
+    job_location: "Baohe",
+    total_hours: 34,
+    start_date: "2023-03-13",
+    completion_date: "1/20/2024",
+    attachment: null,
+  },
+];
 // const fakeData = []
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
+  const [updatedRow, setUpdatedRow] = useState(null);
+
   const handleView = (row) => {
     navigate("/projects/view", { state: { row } });
+  };
+
+  const handleUpdateRow = (updatedRow) => {
+    setUpdatedRow(updatedRow);
   };
 
   const columns = useMemo(
@@ -90,11 +107,8 @@ const Example = () => {
         // },
       },
       {
-        // accessorFn: (originalRow) => new Date(originalRow?.start_date),
-        accessorFn: (originalRow) => {
-          console.log(originalRow)
-          return new Date(originalRow?.start_date)
-        },
+        accessorFn: (originalRow) => new Date(originalRow?.start_date),
+        accessorKey: "start_date",
         id: "start_date",
         header: "Start Date",
         filterVariant: "date-range",
@@ -102,8 +116,11 @@ const Example = () => {
           type: "date", // Or "datetime" for date and time
           required: true,
         },
-        Cell: ({ cell }) => {
-          return cell.getValue()?.toISOString().slice(0, 10)
+        
+        Cell: ({ cell, renderedCellValue, row }) => {
+          // console.log(row)
+          return row.original.start_date
+          // return cell.getValue()?.toISOString().slice(0, 10)
         },
       },
       // {
@@ -169,15 +186,15 @@ const Example = () => {
 
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
+    // const newValidationErrors = validateUser(values);
 
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
+    // if (Object.values(newValidationErrors).some((error) => error)) {
+    //   setValidationErrors(newValidationErrors);
+    //   return;
+    // }
     setValidationErrors({});
     await createUser(values);
-    console.log(values)
+    console.log(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
@@ -225,11 +242,13 @@ const Example = () => {
     //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Create New Job</DialogTitle>
+        <DialogTitle variant="h4">Create New Job</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents} {/*or render custom edit components here*/}
+          {/* <CreateJobModal row={row} onUpdateRow={handleUpdateRow} /> */}
+          {/* <input type="text" onChange={e => row.original.job_id = e.target.value} /> */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -239,11 +258,14 @@ const Example = () => {
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit Project</DialogTitle>
+        <DialogTitle variant="h4">Edit Project</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */ console.log(row.original)}
+          {internalEditComponents}{" "}
+          {
+            /* or render custom edit components here */
+          }
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -308,7 +330,10 @@ function useCreateUser() {
     //client side optimistic update
     onMutate: (newUserInfo) => {
       const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
-      console.log("Previous Users:", prevUsers);
+      console.log("New Users:", newUserInfo);
+      if (!Array.isArray(prevUsers)) {
+        return queryClient.setQueryData(["users"], []);
+      }
       queryClient.setQueryData(["users"], (prevUsers) => [
         ...prevUsers,
         {
@@ -345,7 +370,7 @@ function useUpdateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
-      console.log(newUserInfo)
+      console.log(newUserInfo);
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
           prevUser.job_id === newUserInfo.job_id ? newUserInfo : prevUser

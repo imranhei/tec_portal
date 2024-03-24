@@ -1,6 +1,6 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Jobs from "./Jobs";
-import Projects from "./Projects";
+import Projects from "./components/Projects";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import { useEffect, useState } from "react";
