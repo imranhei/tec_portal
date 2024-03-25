@@ -16,12 +16,12 @@ export default function Sidebar() {
           <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/employee' ? 'font-semibold text-blue-500' : ''}`} to="/employee">Employee</Link>
           <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/register' ? 'font-semibold text-blue-500' : ''}`} to="/register">Register</Link>
         </>}
-        {user.role === "Electrician" && <>
+        {user.role === "Admin" && <>
           <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/current-jobs' ? 'font-semibold text-blue-500' : ''}`} to="/current-jobs">Current Jobs</Link>
           <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/history' ? 'font-semibold text-blue-500' : ''}`} to="/history">History</Link>
         </>}
         <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/profile' ? 'font-semibold text-blue-500' : ''}`} to="/profile">Profile</Link>
-        <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/login' ? 'font-semibold text-blue-500' : ''}`} to="/login" onClick={() => dispatch(setLoggedIn(false))}>Logout</Link>
+        <Link className={`hover:bg-gray-200 p-2 border-b ${location.pathname === '/login' ? 'font-semibold text-blue-500' : ''}`} to="/login" onClick={() => {dispatch(setLoggedIn(false)); sessionStorage.removeItem("access_token")}}>Logout</Link>
     </div>
   )
 }

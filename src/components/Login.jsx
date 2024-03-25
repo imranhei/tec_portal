@@ -22,34 +22,19 @@ const Login = () => {
     })
       .then((res) => res.json()) // Parse JSON response
       .then((data) => {
-        console.log(data);
+        sessionStorage.setItem("access_token", data.access_token);
         if (data.user) {
           dispatch(setUser(data.user));
-          navigate("/");
+          if(data.user.role === "Super Admin") {
+            navigate("/projects");
+          } else if(data.user.role === "Admin"){
+            navigate("/current-jobs");
+          }
         } else {
           alert("Invalid email or password");
         }
       }) // Log parsed JSON data
       .catch((error) => console.error("Error:", error)); // Handle any errors
-
-    // if (response.ok) {
-    //   dispatch(setUser(email));
-    //   navigate("/");
-    // } else {
-    //   alert("Invalid email or password");
-    // }
-
-    // if (email === "admin@gmail.com" && password === "12345678") {
-    //   dispatch(setUser("admin"));
-    //   navigate("/");
-    // }
-    // else if (email === "user@gmail.com" && password === "12345678") {
-    //   dispatch(setUser("user"));
-    //   navigate("/current-jobs");
-    // }
-    // else {
-    //   alert("Invalid email or password");
-    // }
   };
 
   return (

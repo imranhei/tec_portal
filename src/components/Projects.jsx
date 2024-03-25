@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -28,64 +28,64 @@ import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import CreateJobModal from "./modal/CreateJobModal";
+// import CreateJobModal from "./modal/CreateJobModal";
 
-const fakeData = [
-  {
-    job_id: "US-NH",
-    job_location: "Baohe",
-    total_hours: 34,
-    start_date: "2023-03-13",
-    completion_date: "1/20/2024",
-    attachment: null,
-  },
-];
-// const fakeData = []
+// const fakeData = [
+//   {
+//     job_id: "US-NH",
+//     job_location: "Baohe",
+//     total_hours: 34,
+//     start_date: "2023-03-13",
+//     completion_date: "1/20/2024",
+//     attachment: null,
+//   },
+// ];
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
-  const [updatedRow, setUpdatedRow] = useState(null);
+  const [id, setId] = useState(null);
 
   const handleView = (row) => {
     navigate("/projects/view", { state: { row } });
   };
 
-  const handleUpdateRow = (updatedRow) => {
-    setUpdatedRow(updatedRow);
-  };
-
   const columns = useMemo(
     () => [
       {
-        accessorKey: "job_id",
+        accessorKey: "id",
+        header: "ID",
+        size: 80,
+        enableColumnFilter: false,
+        enableEditing: false,
+      },
+      {
+        accessorKey: "job_number",
         header: "Job No",
         enableEditing: true,
         size: 80,
-        // enableColumnFilter: false,
-        // Cell: ({ renderedCellValue }) => (
-        //   <span>{renderedCellValue}</span>
-        // ),
+        enableColumnFilter: true,
       },
       {
         accessorKey: "job_location",
         header: "Location",
-        // muiEditTextFieldProps: {
-        //   required: true,
-        //   error: !!validationErrors?.firstName,
-        //   helperText: validationErrors?.firstName,
-        //   //remove any previous validation errors when user focuses on the input
-        //   onFocus: () =>
-        //     setValidationErrors({
-        //       ...validationErrors,
-        //       firstName: undefined,
-        //     }),
-        //   //optionally add validation checking for onBlur or onChange
-        // },
+        enableEditing: true,
+        muiEditTextFieldProps: {
+          required: true,
+          //   error: !!validationErrors?.firstName,
+          //   helperText: validationErrors?.firstName,
+          //   //remove any previous validation errors when user focuses on the input
+          //   onFocus: () =>
+          //     setValidationErrors({
+          //       ...validationErrors,
+          //       firstName: undefined,
+          //     }),
+          //   //optionally add validation checking for onBlur or onChange
+        },
       },
       {
+        accessorFn: (originalRow) => Number(originalRow?.total_hours),
         accessorKey: "total_hours",
         header: "Total Hours",
         filterVariant: "range",
@@ -94,17 +94,6 @@ const Example = () => {
           type: "number",
           required: true,
         },
-        // muiEditTextFieldProps: {
-        //   required: true,
-        //   error: !!validationErrors?.lastName,
-        //   helperText: validationErrors?.lastName,
-        //   //remove any previous validation errors when user focuses on the input
-        //   onFocus: () =>
-        //     setValidationErrors({
-        //       ...validationErrors,
-        //       lastName: undefined,
-        //     }),
-        // },
       },
       {
         accessorFn: (originalRow) => new Date(originalRow?.start_date),
@@ -116,38 +105,22 @@ const Example = () => {
           type: "date", // Or "datetime" for date and time
           required: true,
         },
-        
         Cell: ({ cell, renderedCellValue, row }) => {
-          // console.log(row)
-          return row.original.start_date
+          return row.original.start_date;
           // return cell.getValue()?.toISOString().slice(0, 10)
         },
+        enableHide: true,
       },
-      // {
-      //   accessorFn: (originalRow) => new Date(originalRow?.completion_date),
-      //   id: "completion_date",
-      //   header: "Completion Date",
-      //   filterVariant: "date-range",
-      //   muiEditTextFieldProps: {
-      //       type: "date",
-      //       required: true,
-      //     },
-      //     Cell: ({ cell }) => {
-      //       console.log(cell.getValue()?.toLocaleDateString())
-      //       return cell.getValue()?.toLocaleDateString()
-      //     }
-      //   // muiEditTextFieldProps: {
-      //   //   type: "date",
-      //   //   required: true,
-      //   // },
-      //   // editVariant: "select",
-      //   // editSelectOptions: usStates,
-      //   // muiEditTextFieldProps: {
-      //   //   select: true,
-      //   //   error: !!validationErrors?.state,
-      //   //   helperText: validationErrors?.state,
-      //   // },
-      // },
+      {
+        accessorFn: (originalRow) => new Date(originalRow?.completion_date),
+        id: "completion_date",
+        header: "Completion Date",
+        filterVariant: "date-range",
+        muiEditTextFieldProps: {
+          type: "date",
+        },
+        Cell: ({ cell, row }) => row.original.completion_date,
+      },
       {
         accessorKey: "attachment",
         header: "Attachment",
@@ -172,7 +145,7 @@ const Example = () => {
     useCreateUser();
   //call READ hook
   const {
-    data: fetchedUsers = [],
+    data: fetchedJobs = [],
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
@@ -186,40 +159,41 @@ const Example = () => {
 
   //CREATE action
   const handleCreateUser = async ({ values, table }) => {
-    // const newValidationErrors = validateUser(values);
+    const newValidationErrors = validateUser(values);
 
-    // if (Object.values(newValidationErrors).some((error) => error)) {
-    //   setValidationErrors(newValidationErrors);
-    //   return;
-    // }
+    if (Object.values(newValidationErrors).some((error) => error)) {
+      setValidationErrors(newValidationErrors);
+      return;
+    }
     setValidationErrors({});
     await createUser(values);
-    console.log(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
-  const handleSaveUser = async ({ values, table }) => {
+  const handleSaveUser = async ({ values, table, row }) => {
     const newValidationErrors = validateUser(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
     }
     setValidationErrors({});
-    await updateUser(values);
+    setId(row.original.id);
+    await updateUser(values, 2);
     table.setEditingRow(null); //exit editing mode
   };
 
   //DELETE action
   const openDeleteConfirmModal = (row) => {
+    console.log(row.id);
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.job_id);
+      deleteUser(row.original.id);
     }
   };
 
   const table = useMaterialReactTable({
     columns,
-    data: fetchedUsers,
+    data: fetchedJobs, //data,
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
@@ -246,9 +220,7 @@ const Example = () => {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {internalEditComponents} {/*or render custom edit components here*/}
-          {/* <CreateJobModal row={row} onUpdateRow={handleUpdateRow} /> */}
-          {/* <input type="text" onChange={e => row.original.job_id = e.target.value} /> */}
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -262,10 +234,7 @@ const Example = () => {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents}{" "}
-          {
-            /* or render custom edit components here */
-          }
+          {internalEditComponents}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -296,12 +265,6 @@ const Example = () => {
         variant="contained"
         onClick={() => {
           table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
         }}
       >
         Create New Job
@@ -312,6 +275,9 @@ const Example = () => {
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
+      columnVisibility: {
+        id: false,
+      },
     },
   });
 
@@ -323,14 +289,41 @@ function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      console.log(user);
+      const formData = new FormData();
+      formData.append("job_number", user.job_number);
+      formData.append("job_location", user.job_location);
+      formData.append("total_hours", user.total_hours);
+      formData.append("start_date", user.start_date);
+      formData.append("completion_date", user.completion_date);
+      formData.append("attachment", user.attachment);
+
+      const response = await fetch(
+        "https://backend.tec.ampectech.com/api/jobs",
+        {
+          method: "POST",
+          headers: {
+            // "Content-Type": "multipart/form-data",
+            // "Accept": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create user");
+      }
+
+      // Assuming the response is JSON
+      const data = await response.json();
+
+      // Return data if needed
+      return data;
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
       const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
-      console.log("New Users:", newUserInfo);
       if (!Array.isArray(prevUsers)) {
         return queryClient.setQueryData(["users"], []);
       }
@@ -342,18 +335,41 @@ function useCreateUser() {
         },
       ]);
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 
 //READ hook (get users from api)
+// function useGetUsers() {
+//   return useQuery({
+//     queryKey: ["users"],
+//     queryFn: async () => {
+//       //send api request here
+//       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
+//       return Promise.resolve(data);
+//     },
+//     refetchOnWindowFocus: false,
+//   });
+// }
+
 function useGetUsers() {
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(fakeData);
+      const response = await fetch(
+        "https://backend.tec.ampectech.com/api/jobs",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+      return response.json();
     },
     refetchOnWindowFocus: false,
   });
@@ -364,20 +380,74 @@ function useUpdateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      // Create form data object
+      // const formData = new FormData();
+      // // Append user data to the form data object
+      // Object.entries(user).forEach(([key, value]) => {
+      //   formData.append(key, value);
+      // });
+
+      console.log(user);
+      const formData = new FormData();
+      formData.append("job_number", user.job_number);
+      formData.append("job_location", user.job_location);
+      formData.append("total_hours", user.total_hours);
+      if (typeof(user.start_date) === "string") {
+        formData.append('start_date', user.start_date);
+      } else {
+        const date = user.start_date; // Current date
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
+        const day = date.getDate().toString().padStart(2, "0");
+        formData.append('start_date', `${year}-${month}-${day}`);
+      }
+      if (typeof(user.completion_date) === "string") {
+        formData.append('completion_date', user.completion_date);
+      } else {
+        const date = user.completion_date; // Current date
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
+        const day = date.getDate().toString().padStart(2, "0");
+        formData.append('completion_date', `${year}-${month}-${day}`);
+      }
+      // formData.append('attachment', user.attachment);
+      console.log(typeof(user.attachment));
+
+      // Send POST request to update user
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${user.id}`,
+        {
+          method: "POST",
+          headers: {
+            // Don't set Content-Type here, fetch will do it automatically for FormData
+            Accept: "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+          body: formData, // Pass FormData directly as body
+        }
+      );
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to update user");
+      // }
+
+      // Assuming the response is JSON
+      const data = await response.json();
+      console.log(data);
+
+      // Return data if needed
+      return data;
     },
     //client side optimistic update
-    onMutate: (newUserInfo) => {
-      console.log(newUserInfo);
-      queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.map((prevUser) =>
-          prevUser.job_id === newUserInfo.job_id ? newUserInfo : prevUser
-        )
-      );
-    },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    // onMutate: (newUserInfo) => {
+    //   console.log(newUserInfo);
+    //   queryClient.setQueryData(["users"], (prevUsers) =>
+    //     prevUsers?.map((prevUser) =>
+    //       prevUser.job_number === newUserInfo.job_number ? newUserInfo : prevUser
+    //     )
+    //   );
+    // },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -386,17 +456,35 @@ function useDeleteUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (userId) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      // Send DELETE request to API endpoint
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      // Assuming the response is JSON
+      const data = await response.json();
+
+      // Return data if needed
+      return data;
     },
     //client side optimistic update
     onMutate: (userId) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.filter((user) => user.job_id !== userId)
+        prevUsers?.filter((user) => user.id !== userId)
       );
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -416,18 +504,24 @@ const Projects = () => (
 export default Projects;
 
 const validateRequired = (value) => !!value.length;
-const validateEmail = (email) =>
-  !!email.length &&
-  email
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
+// const validateEmail = (email) =>
+//   !!email.length &&
+//   email
+//     .toLowerCase()
+//     .match(
+//       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+//     );
+// const validateDate = (date) => !!date.toISOString().length;
 
 function validateUser(user) {
   return {
-    job_id: !validateRequired(user.job_id) ? "Job Id is Required" : "",
-    // lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
-    // email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
+    job_number: !validateRequired(user.job_number)
+      ? "Job Number is Required"
+      : "",
+    job_location: !validateRequired(user.job_location)
+      ? "Job Location is Required"
+      : "",
+    total_hours: isNaN(user.total_hours) ? "Total Hours is Required" : "",
+    // start_date: !validateDate(user.start_date) ? "Start Date is Required" : "",
   };
 }

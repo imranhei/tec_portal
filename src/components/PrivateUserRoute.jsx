@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 const PrivateRoutes = () => {
     const user = useSelector(state => state.userData.user);
     return (
-        user?.role === "Electrician" ? <Outlet /> : <Navigate to="/current-jobs" />
+        user?.role === "Admin" ? <Outlet /> : <Navigate to="/current-jobs" />
     )
 }
 export default PrivateRoutes;
