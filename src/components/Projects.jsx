@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { Input } from "@material-tailwind/react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -21,7 +22,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-// import { fakeData } from "./makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
@@ -31,21 +31,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 // import CreateJobModal from "./modal/CreateJobModal";
 
-// const fakeData = [
-//   {
-//     job_id: "US-NH",
-//     job_location: "Baohe",
-//     total_hours: 34,
-//     start_date: "2023-03-13",
-//     completion_date: "1/20/2024",
-//     attachment: null,
-//   },
-// ];
-
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
-  const [id, setId] = useState(null);
+  const [tempRow, setTempRow] = useState(null);
 
   const handleView = (row) => {
     navigate("/projects/view", { state: { row } });
@@ -105,11 +94,7 @@ const Example = () => {
           type: "date", // Or "datetime" for date and time
           required: true,
         },
-        Cell: ({ cell, renderedCellValue, row }) => {
-          return row.original.start_date;
-          // return cell.getValue()?.toISOString().slice(0, 10)
-        },
-        enableHide: true,
+        Cell: ({ cell, renderedCellValue, row }) => row.original.start_date,
       },
       {
         accessorFn: (originalRow) => new Date(originalRow?.completion_date),
@@ -158,7 +143,7 @@ const Example = () => {
     useDeleteUser();
 
   //CREATE action
-  const handleCreateUser = async ({ values, table }) => {
+  const handleCreateUser = async ({ values, table, row }) => {
     const newValidationErrors = validateUser(values);
 
     if (Object.values(newValidationErrors).some((error) => error)) {
@@ -166,26 +151,24 @@ const Example = () => {
       return;
     }
     setValidationErrors({});
-    await createUser(values);
+    await createUser(row);
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
   const handleSaveUser = async ({ values, table, row }) => {
-    const newValidationErrors = validateUser(values);
+    const newValidationErrors = validateUser(row);
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
     }
     setValidationErrors({});
-    setId(row.original.id);
-    await updateUser(values, 2);
+    await updateUser(row);
     table.setEditingRow(null); //exit editing mode
   };
 
   //DELETE action
   const openDeleteConfirmModal = (row) => {
-    console.log(row.id);
     if (window.confirm("Are you sure you want to delete this user?")) {
       deleteUser(row.original.id);
     }
@@ -214,33 +197,146 @@ const Example = () => {
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
     //optionally customize modal content
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
+    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => {
+      // const [tempCreateRow, setTempCreateRow] = useState(row.original);
+
+      // const handleInputChange = (field, value) => {
+      //   setTempCreateRow((prevTempRow) => ({
+      //     ...prevTempRow,
+      //     [field]: value,
+      //   }));
+      // }
+      return (
       <>
         <DialogTitle variant="h4">Create New Job</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
           {internalEditComponents}
+          {/* <div className="flex flex-col py-5 gap-6">
+              <Input
+                label="Job Number"
+                variant="static"
+                type="text"
+                defaultValue={tempCreateRow.job_number}
+                onChange={(e) =>
+                  handleInputChange("job_number", e.target.value)
+                }
+                className="h-4"
+              />
+              <Input
+                label="Job Location"
+                variant="static"
+                type="text"
+                defaultValue={tempCreateRow.job_location}
+                onChange={(e) =>
+                  handleInputChange("job_location", e.target.value)
+                }
+              />
+              <Input
+                label="Total Hours"
+                variant="static"
+                type="number"
+                defaultValue={tempCreateRow.total_hours}
+                onChange={(e) =>
+                  handleInputChange("total_hours", e.target.value)
+                }
+              />
+              <Input
+                label="Start Date"
+                variant="static"
+                type="date"
+                defaultValue={tempCreateRow.start_date}
+                onChange={(e) =>
+                  handleInputChange("start_date", e.target.value)
+                }
+              />
+              <Input
+                label="Completion Date"
+                variant="static"
+                type="date"
+                defaultValue={tempCreateRow.completion_date}
+                onChange={(e) =>
+                  handleInputChange("completion_date", e.target.value)
+                }
+              />
+            </div> */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
         </DialogActions>
       </>
-    ),
+    )},
     //optionally customize modal content
-    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h4">Edit Project</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          {internalEditComponents}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
+    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
+      setTempRow(row.original);
+      const handleInputChange = (field, value) => {
+        setTempRow((prevTempRow) => ({
+          ...prevTempRow,
+          [field]: value,
+        }));
+      };
+      return (
+        <>
+          <DialogTitle variant="h4">Edit Project</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
+            <div className="flex flex-col py-5 gap-6">
+              <Input
+                label="Job Number"
+                variant="static"
+                type="text"
+                defaultValue={tempRow.job_number}
+                onChange={(e) =>
+                  handleInputChange("job_number", e.target.value)
+                }
+                className="h-4"
+              />
+              <Input
+                label="Job Location"
+                variant="static"
+                type="text"
+                defaultValue={tempRow.job_location}
+                onChange={(e) =>
+                  handleInputChange("job_location", e.target.value)
+                }
+              />
+              <Input
+                label="Total Hours"
+                variant="static"
+                type="number"
+                defaultValue={tempRow.total_hours}
+                onChange={(e) =>
+                  handleInputChange("total_hours", e.target.value)
+                }
+              />
+              <Input
+                label="Start Date"
+                variant="static"
+                type="date"
+                defaultValue={tempRow.start_date}
+                onChange={(e) =>
+                  handleInputChange("start_date", e.target.value)
+                }
+              />
+              <Input
+                label="Completion Date"
+                variant="static"
+                type="date"
+                defaultValue={tempRow.completion_date}
+                onChange={(e) =>
+                  handleInputChange("completion_date", e.target.value)
+                }
+              />
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={tempRow} test={tempRow} />
+          </DialogActions>
+        </>
+      );
+    },
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "0rem" }}>
         <Tooltip title="View">
@@ -289,7 +385,6 @@ function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
-      console.log(user);
       const formData = new FormData();
       formData.append("job_number", user.job_number);
       formData.append("job_location", user.job_location);
@@ -321,7 +416,7 @@ function useCreateUser() {
       // Return data if needed
       return data;
     },
-    //client side optimistic update
+    // client side optimistic update
     onMutate: (newUserInfo) => {
       const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
       if (!Array.isArray(prevUsers)) {
@@ -338,19 +433,6 @@ function useCreateUser() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
-
-//READ hook (get users from api)
-// function useGetUsers() {
-//   return useQuery({
-//     queryKey: ["users"],
-//     queryFn: async () => {
-//       //send api request here
-//       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-//       return Promise.resolve(data);
-//     },
-//     refetchOnWindowFocus: false,
-//   });
-// }
 
 function useGetUsers() {
   return useQuery({
@@ -381,37 +463,35 @@ function useUpdateUser() {
   return useMutation({
     mutationFn: async (user) => {
       // Create form data object
-      // const formData = new FormData();
-      // // Append user data to the form data object
-      // Object.entries(user).forEach(([key, value]) => {
-      //   formData.append(key, value);
-      // });
-
-      console.log(user);
       const formData = new FormData();
-      formData.append("job_number", user.job_number);
-      formData.append("job_location", user.job_location);
-      formData.append("total_hours", user.total_hours);
-      if (typeof(user.start_date) === "string") {
-        formData.append('start_date', user.start_date);
-      } else {
-        const date = user.start_date; // Current date
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
-        const day = date.getDate().toString().padStart(2, "0");
-        formData.append('start_date', `${year}-${month}-${day}`);
-      }
-      if (typeof(user.completion_date) === "string") {
-        formData.append('completion_date', user.completion_date);
-      } else {
-        const date = user.completion_date; // Current date
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
-        const day = date.getDate().toString().padStart(2, "0");
-        formData.append('completion_date', `${year}-${month}-${day}`);
-      }
+      // Append user data to the form data object
+      Object.entries(user).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      // const formData = new FormData();
+      // formData.append("job_number", user.job_number);
+      // formData.append("job_location", user.job_location);
+      // formData.append("total_hours", user.total_hours);
+      // if (typeof user.start_date === "string") {
+      //   formData.append("start_date", user.start_date);
+      // } else {
+      //   const date = user.start_date; // Current date
+      //   const year = date.getFullYear();
+      //   const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
+      //   const day = date.getDate().toString().padStart(2, "0");
+      //   formData.append("start_date", `${year}-${month}-${day}`);
+      // }
+      // if (typeof user.completion_date === "string") {
+      //   formData.append("completion_date", user.completion_date);
+      // } else {
+      //   const date = user.completion_date; // Current date
+      //   const year = date.getFullYear();
+      //   const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month starts from 0, so add 1
+      //   const day = date.getDate().toString().padStart(2, "0");
+      //   formData.append("completion_date", `${year}-${month}-${day}`);
+      // }
       // formData.append('attachment', user.attachment);
-      console.log(typeof(user.attachment));
 
       // Send POST request to update user
       const response = await fetch(
@@ -433,20 +513,18 @@ function useUpdateUser() {
 
       // Assuming the response is JSON
       const data = await response.json();
-      console.log(data);
 
       // Return data if needed
       return data;
     },
-    //client side optimistic update
-    // onMutate: (newUserInfo) => {
-    //   console.log(newUserInfo);
-    //   queryClient.setQueryData(["users"], (prevUsers) =>
-    //     prevUsers?.map((prevUser) =>
-    //       prevUser.job_number === newUserInfo.job_number ? newUserInfo : prevUser
-    //     )
-    //   );
-    // },
+    // client side optimistic update
+    onMutate: (newUserInfo) => {
+      queryClient.setQueryData(["users"], (prevUsers) =>
+        prevUsers?.map((prevUser) =>
+          prevUser.job_number === newUserInfo.job_number ? newUserInfo : prevUser
+        )
+      );
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }

@@ -1,29 +1,51 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
 
-  const handleRegister = (event) => {
+  const handleRegister = async (event) => {
     event.preventDefault();
 
-    // Here you can implement your registration logic
-    console.log('Username:', username);
-    console.log('Email:', email);
-    console.log('Password:', password);
-    // You can send the data to your backend API for registration
+    try {
+      const formData = new FormData();
 
-    // For demonstration purposes, let's assume the registration was successful
-    navigate("/login");
+      formData.append("name", username);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("roles", role);
+
+      // Send POST request to register the user
+      const response = await fetch(
+        "https://backend.tec.ampectech.com/api/users",
+        {
+          method: "POST",
+          headers: {
+            // Corrected the spelling of "Authorization"
+            "Accept": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+          body: formData, // Sending form data, no need to set content type explicitly
+        }
+      );
+
+      if (response.ok) {
+        alert("User registered successfully!");
+      } else {
+        throw new Error("Failed to register user");
+      }
+    } catch (error) {
+      // Handle any errors that occur during registration
+      console.error("Error during registration:", error);
+    }
   };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
       <div className="w-96 p-6 bg-white rounded-md shadow-md lg:max-w-xl border">
-        <img src="/tec_logo.png" alt="logo" className="mx-auto w-32 pb-4" />
+        <img src="/tec_logo.png" alt="logo" className="mx-auto w-32" />
         <form className="mt-6">
           <div className="mb-4">
             <label
@@ -53,7 +75,7 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <div className="mb-2">
+          <div className="mb-4">
             <label
               htmlFor="password"
               className="block text-sm font-semibold text-gray-800"
@@ -62,12 +84,30 @@ const Register = () => {
             </label>
             <input
               type="password"
-              id="password"
+              id="confirm-password"
               className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="mt-2">
+          <div className="flex gap-6">
+            <div className="flex gap-2">
+              <input
+                type="checkbox"
+                checked={role === "Super Admin"}
+                onChange={() => setRole("Super Admin")}
+              />
+              <p>Admin</p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="checkbox"
+                checked={role === "Admin"}
+                onChange={() => setRole("Admin")}
+              />
+              <p>Electrician</p>
+            </div>
+          </div>
+          <div className="mt-4">
             <button
               className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600"
               onClick={handleRegister}
@@ -77,7 +117,7 @@ const Register = () => {
           </div>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-700">
+        {/* <p className="mt-4 text-sm text-center text-gray-700">
           Already have an account?{" "}
           <Link
             to="/login"
@@ -85,8 +125,7 @@ const Register = () => {
           >
             Log in
           </Link>
-        </p>
-        <input type="date" value="2021-11-22" onChange={e => console.log(e.target.value)}/>
+        </p> */}
       </div>
     </div>
   );
