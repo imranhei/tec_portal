@@ -151,7 +151,7 @@ const Example = () => {
       return;
     }
     setValidationErrors({});
-    await createUser(row);
+    await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
@@ -218,7 +218,7 @@ const Example = () => {
                 label="Job Number"
                 variant="static"
                 type="text"
-                defaultValue={tempCreateRow.job_number}
+                defaultValue={tempCreateRow?.job_number}
                 onChange={(e) =>
                   handleInputChange("job_number", e.target.value)
                 }
@@ -228,7 +228,7 @@ const Example = () => {
                 label="Job Location"
                 variant="static"
                 type="text"
-                defaultValue={tempCreateRow.job_location}
+                defaultValue={tempCreateRow?.job_location}
                 onChange={(e) =>
                   handleInputChange("job_location", e.target.value)
                 }
@@ -237,7 +237,7 @@ const Example = () => {
                 label="Total Hours"
                 variant="static"
                 type="number"
-                defaultValue={tempCreateRow.total_hours}
+                defaultValue={tempCreateRow?.total_hours}
                 onChange={(e) =>
                   handleInputChange("total_hours", e.target.value)
                 }
@@ -246,7 +246,7 @@ const Example = () => {
                 label="Start Date"
                 variant="static"
                 type="date"
-                defaultValue={tempCreateRow.start_date}
+                defaultValue={tempCreateRow?.start_date}
                 onChange={(e) =>
                   handleInputChange("start_date", e.target.value)
                 }
@@ -255,7 +255,7 @@ const Example = () => {
                 label="Completion Date"
                 variant="static"
                 type="date"
-                defaultValue={tempCreateRow.completion_date}
+                defaultValue={tempCreateRow?.completion_date}
                 onChange={(e) =>
                   handleInputChange("completion_date", e.target.value)
                 }
@@ -269,7 +269,9 @@ const Example = () => {
     )},
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => {
-      setTempRow(row.original);
+      if (tempRow === null) {
+        setTempRow(row.original);
+      }
       const handleInputChange = (field, value) => {
         setTempRow((prevTempRow) => ({
           ...prevTempRow,
@@ -287,7 +289,7 @@ const Example = () => {
                 label="Job Number"
                 variant="static"
                 type="text"
-                defaultValue={tempRow.job_number}
+                defaultValue={tempRow?.job_number}
                 onChange={(e) =>
                   handleInputChange("job_number", e.target.value)
                 }
@@ -297,7 +299,7 @@ const Example = () => {
                 label="Job Location"
                 variant="static"
                 type="text"
-                defaultValue={tempRow.job_location}
+                defaultValue={tempRow?.job_location}
                 onChange={(e) =>
                   handleInputChange("job_location", e.target.value)
                 }
@@ -306,7 +308,7 @@ const Example = () => {
                 label="Total Hours"
                 variant="static"
                 type="number"
-                defaultValue={tempRow.total_hours}
+                defaultValue={tempRow?.total_hours}
                 onChange={(e) =>
                   handleInputChange("total_hours", e.target.value)
                 }
@@ -315,7 +317,7 @@ const Example = () => {
                 label="Start Date"
                 variant="static"
                 type="date"
-                defaultValue={tempRow.start_date}
+                defaultValue={tempRow?.start_date}
                 onChange={(e) =>
                   handleInputChange("start_date", e.target.value)
                 }
@@ -324,7 +326,7 @@ const Example = () => {
                 label="Completion Date"
                 variant="static"
                 type="date"
-                defaultValue={tempRow.completion_date}
+                defaultValue={tempRow?.completion_date}
                 onChange={(e) =>
                   handleInputChange("completion_date", e.target.value)
                 }
@@ -340,7 +342,7 @@ const Example = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "0rem" }}>
         <Tooltip title="View">
-          <IconButton onClick={() => handleView(row.original)}>
+          <IconButton onClick={() => handleView(row?.original)}>
             <ViewIcon />
           </IconButton>
         </Tooltip>
@@ -385,6 +387,7 @@ function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
+      console.log(user)
       const formData = new FormData();
       formData.append("job_number", user.job_number);
       formData.append("job_location", user.job_location);
@@ -435,6 +438,7 @@ function useCreateUser() {
 }
 
 function useGetUsers() {
+  const navigate = useNavigate();
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -449,6 +453,10 @@ function useGetUsers() {
         }
       );
       if (!response.ok) {
+        if (response.status === 401) {
+          // Redirect to the login page
+          navigate("/");
+        }
         throw new Error("Failed to fetch data");
       }
       return response.json();
@@ -468,7 +476,7 @@ function useUpdateUser() {
       Object.entries(user).forEach(([key, value]) => {
         formData.append(key, value);
       });
-
+      // console.log(user)
       // const formData = new FormData();
       // formData.append("job_number", user.job_number);
       // formData.append("job_location", user.job_location);

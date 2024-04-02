@@ -21,49 +21,48 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { employeers, usStates } from "../makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoggedIn } from "../redux/auth";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
-//   const navigate = useNavigate();
-//   const handleView = (row) => {
-//     navigate("/projects/view", { state: { row } });
-//   };
+  //   const handleView = (row) => {
+  //     navigate("/projects/view", { state: { row } });
+  //   };
 
   const columns = useMemo(
     () => [
       {
         accessorKey: "id",
         header: "Employee Id",
-        enableEditing: true,
-        // size: 80,
-        // enableColumnFilter: false,
-        // Cell: ({ renderedCellValue }) => (
-        //   <span>{renderedCellValue}</span>
-        // ),
+        enableEditing: false,
       },
       {
-        accessorKey: "em_name",
+        accessorKey: "name",
         header: "Employee Name",
       },
       {
-        accessorKey: "projects",
-        header: "Working Projects",
-        filterVariant: "range",
-        filterFn: "between",
+        accessorKey: "email",
+        header: "Email",
       },
       {
-        accessorKey: "email",
-        header: "email",
+        accessorKey: "role",
+        header: "Role",
+        editVariant: "select",
+        editSelectOptions: ["Super Admin", "Admin", "User"],
+        muiEditTextFieldProps: {
+          select: true,
+        },
+        Cell: ({ row }) => row.original.roles[0],
       },
-    ],
+    ]
     // [validationErrors]
   );
 
@@ -143,7 +142,7 @@ const Example = () => {
     //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Register New Employee</DialogTitle>
+        <DialogTitle variant="h4">Register New Employee</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
@@ -157,7 +156,7 @@ const Example = () => {
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit Employee</DialogTitle>
+        <DialogTitle variant="h4">Edit Employee</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -187,22 +186,22 @@ const Example = () => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Button
-        variant="contained"
-        onClick={() => {
-          table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-          //or you can pass in a row object to set default values with the `createRow` helper function
-          // table.setCreatingRow(
-          //   createRow(table, {
-          //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-          //   }),
-          // );
-        }}
-      >
-        Register New Employee
-      </Button>
-    ),
+    // renderTopToolbarCustomActions: ({ table }) => (
+    //   <Button
+    //     variant="contained"
+    //     onClick={() => {
+    //       table.setCreatingRow(true); //simplest way to open the create row modal with no default values
+    //       //or you can pass in a row object to set default values with the `createRow` helper function
+    //       // table.setCreatingRow(
+    //       //   createRow(table, {
+    //       //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
+    //       //   }),
+    //       // );
+    //     }}
+    //   >
+    //     Register New Employee
+    //   </Button>
+    // ),
     state: {
       isLoading: isLoadingUsers,
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
@@ -239,12 +238,32 @@ function useCreateUser() {
 
 //READ hook (get users from api)
 function useGetUsers() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(employeers);
+      const response = await fetch(
+        "https://backend.tec.ampectech.com/api/users",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Redirect to the login page
+          dispatch(setLoggedIn(false));
+          sessionStorage.removeItem("access_token");
+          navigate("/login");
+        }
+        throw new Error("Failed to fetch data");
+      }
+      const data = await response.json();
+      return data.users;
     },
     refetchOnWindowFocus: false,
   });
@@ -276,9 +295,27 @@ function useDeleteUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (userId) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      // Send DELETE request to API endpoint
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      // Assuming the response is JSON
+      const data = await response.json();
+
+      // Return data if needed
+      return data;
     },
     //client side optimistic update
     onMutate: (userId) => {
@@ -286,7 +323,7 @@ function useDeleteUser() {
         prevUsers?.filter((user) => user.id !== userId)
       );
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 

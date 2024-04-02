@@ -90,13 +90,18 @@ const Register = () => {
             />
           </div>
           <div className="flex gap-6">
+          <label
+              className="block text-sm font-semibold text-gray-800"
+            >
+              Role :
+            </label>
             <div className="flex gap-2">
               <input
                 type="checkbox"
                 checked={role === "Super Admin"}
                 onChange={() => setRole("Super Admin")}
               />
-              <p>Admin</p>
+              <p className="block text-sm font-semibold text-gray-800">Admin</p>
             </div>
             <div className="flex gap-2">
               <input
@@ -104,7 +109,7 @@ const Register = () => {
                 checked={role === "Admin"}
                 onChange={() => setRole("Admin")}
               />
-              <p>Electrician</p>
+              <p className="block text-sm font-semibold text-gray-800">Electrician</p>
             </div>
           </div>
           <div className="mt-4">
