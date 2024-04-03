@@ -1,40 +1,90 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/auth";
+// import { useDispatch } from "react-redux";
+// import { setUser } from "../redux/auth";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
 
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
 
-    fetch("https://backend.tec.ampectech.com/api/auth/login", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json()) // Parse JSON response
-      .then((data) => {
-        sessionStorage.setItem("access_token", data.access_token);
-        if (data.user) {
-          dispatch(setUser(data.user));
-          if(data.user.role === "Super Admin") {
-            navigate("/projects");
-          } else if(data.user.role === "Admin"){
-            navigate("/current-jobs");
-          }
-        } else {
-          alert("Invalid email or password");
+    try {
+      const response = await fetch("https://backend.tec.ampectech.com/api/auth/login", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error("Invalid email or password");
+      }
+      const data = await response.json();
+      sessionStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("access_token", data.access_token);
+
+      // Token refresh logic
+      await handleTokenRefresh(data.access_token);
+
+      if (data?.user) {
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+        if (data.user.role === "Super Admin" || data.user.role === "Admin") {
+          navigate("/projects");
+        } else if (data.user.role === "User") {
+          navigate("/current-jobs");
         }
-      }) // Log parsed JSON data
-      .catch((error) => console.error("Error:", error)); // Handle any errors
+      }
+    } catch (error) {
+      alert(error.message);
+      console.error("Error:", error);
+    }
+
+    // fetch("https://backend.tec.ampectech.com/api/auth/login", {
+    //   method: "POST",
+    //   body: formData,
+    // })
+    //   .then((res) => res.json()) // Parse JSON response
+    //   .then((data) => {
+    //     sessionStorage.setItem("access_token", data.access_token);
+    //     if (data.user) {
+    //       dispatch(setUser(data.user));
+    //       if(data.user.role === "Super Admin") {
+    //         navigate("/projects");
+    //       } else if(data.user.role === "Admin"){
+    //         navigate("/current-jobs");
+    //       }
+    //     } else {
+    //       alert("Invalid email or password");
+    //     }
+    //   }) // Log parsed JSON data
+    //   .catch((error) => console.error("Error:", error)); // Handle any errors
+  };
+
+  const handleTokenRefresh = async (accessToken) => {
+    try {
+      const response = await fetch("https://backend.tec.ampectech.com/api/auth/refresh", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to refresh token");
+      }
+  
+      const data = await response.json();
+      if (data?.access_token) {
+        localStorage.setItem("refresh_token", data.access_token);
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      throw error; // Rethrow the error to be caught in the handleLogin function
+    }
   };
 
   return (

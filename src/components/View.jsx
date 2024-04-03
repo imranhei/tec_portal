@@ -16,16 +16,16 @@ export default function View() {
 
   return (
     <div className="space-y-4">
-      <div className="p-6 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold pb-4">Job Id: {row?.job_id}</h2>
+      <div className="p-6 bg-white border rounded shadow font-semibold">
+        <h2 className="text-2xl font-bold pb-4">Job Number: {row?.job_number}</h2>
         <p>Location: {row?.job_location}</p>
         <p>Total Hours: {row?.total_hours}</p>
         <p>Start Date: {row?.start_date}</p>
         <p>Completion Date: {row?.completion_date}</p>
       </div>
-      <div className="p-6 bg-white rounded shadow">
+      <div className="p-6 bg-white border rounded shadow">
         <h2 className="font-bold text-xl pb-4">Assigned Employees</h2>
-        <EmpDetails />
+        <EmpDetails id={row?.id}/>
       </div>
     </div>
   );

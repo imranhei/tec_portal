@@ -41,7 +41,14 @@ const Example = () => {
     () => [
       {
         accessorKey: "id",
-        header: "Employee Id",
+        header: "Id",
+        size: "small",
+        muiTableBodyCellProps: {
+          align: 'center',
+        },
+        muiTableHeadCellProps: {
+          align: 'center',
+        },
         enableEditing: false,
       },
       {
@@ -53,14 +60,14 @@ const Example = () => {
         header: "Email",
       },
       {
-        accessorKey: "role",
+        accessorKey: 'roles',
         header: "Role",
         editVariant: "select",
         editSelectOptions: ["Super Admin", "Admin", "User"],
         muiEditTextFieldProps: {
           select: true,
         },
-        Cell: ({ row }) => row.original.roles[0],
+        // Cell: ({ row }) => row.original.roles[0],
       },
     ]
     // [validationErrors]
@@ -99,12 +106,13 @@ const Example = () => {
 
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    // console.log(values)
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
+    // const newValidationErrors = validateUser(values);
+    // // console.log(values)
+    // if (Object.values(newValidationErrors).some((error) => error)) {
+    //   setValidationErrors(newValidationErrors);
+    //   return;
+    // }
+    console.log(values);
     setValidationErrors({});
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
@@ -123,6 +131,7 @@ const Example = () => {
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
+    positionActionsColumn: 'last',
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -160,7 +169,7 @@ const Example = () => {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {/* or render custom edit components here */}
+          {internalEditComponents} {console.log(row.original)/* or render custom edit components here */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -249,7 +258,7 @@ function useGetUsers() {
           method: "GET",
           headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
         }
       );
@@ -263,6 +272,9 @@ function useGetUsers() {
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
+      data.users.forEach(user => {
+        user.roles = user.roles[0]; // Convert array to string
+      });
       return data.users;
     },
     refetchOnWindowFocus: false,
@@ -302,7 +314,7 @@ function useDeleteUser() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
         }
       );

@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
+import cleaner from "../storage/cleaner";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -180,6 +181,7 @@ const Example = () => {
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
+    positionActionsColumn: 'last',
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -387,7 +389,6 @@ function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
-      console.log(user)
       const formData = new FormData();
       formData.append("job_number", user.job_number);
       formData.append("job_location", user.job_location);
@@ -403,13 +404,16 @@ function useCreateUser() {
           headers: {
             // "Content-Type": "multipart/form-data",
             // "Accept": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
           body: formData,
         }
       );
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.log("Unauthorized");
+        }
         throw new Error("Failed to create user");
       }
 
@@ -448,14 +452,14 @@ function useGetUsers() {
           method: "GET",
           headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
         }
       );
       if (!response.ok) {
         if (response.status === 401) {
-          // Redirect to the login page
-          navigate("/");
+          cleaner();
+          navigate("/login");
         }
         throw new Error("Failed to fetch data");
       }
@@ -509,7 +513,7 @@ function useUpdateUser() {
           headers: {
             // Don't set Content-Type here, fetch will do it automatically for FormData
             Accept: "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
           body: formData, // Pass FormData directly as body
         }
@@ -549,7 +553,7 @@ function useDeleteUser() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
         }
       );

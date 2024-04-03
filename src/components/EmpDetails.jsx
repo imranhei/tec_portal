@@ -26,11 +26,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
+import cleaner from "../storage/cleaner";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-const Example = () => {
+const Example = ({id}) => {
   const [validationErrors, setValidationErrors] = useState({});
 //   const navigate = useNavigate();
 //   const handleView = (row) => {
@@ -40,9 +41,9 @@ const Example = () => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "em_name",
+        accessorKey: "name",
         header: "Name",
-        enableEditing: true,
+        enableEditing: false,
         size: 80,
         // enableColumnFilter: false,
         // Cell: ({ renderedCellValue }) => (
@@ -50,8 +51,11 @@ const Example = () => {
         // ),
       },
       {
-        accessorKey: "ass_date",
+        // accessorFn: (originalRow) => new Date(originalRow?.assign_date),
+        accessorKey: "assign_date",
         header: "Assign Date",
+        enableEditing: false,
+        // Cell: ({ row }) => row.original.assign_date,
         // muiEditTextFieldProps: {
         //   required: true,
         //   error: !!validationErrors?.firstName,
@@ -66,20 +70,22 @@ const Example = () => {
         // },
       },
       {
-        accessorKey: "ass_hours",
+        accessorFn: (originalRow) => Number(originalRow?.assign_hours || 0),
+        accessorKey: "assign_hours",
         header: "Assigned Hours",
         filterVariant: "range",
         filterFn: "between",
+        muiEditTextFieldProps: {
+          type: "number",
+          required: true,
+        },
       },
       {
-        accessorKey: "com_hours",
+        accessorKey: "completed_hours",
+        enableEditing: false,
         header: "Completed Hours",
         filterVariant: "range",
         filterFn: "between",
-      },
-      {
-        accessorKey: "email",
-        header: "email",
       },
     ],
     // [validationErrors]
@@ -94,7 +100,7 @@ const Example = () => {
     isError: isLoadingUsersError,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers,
-  } = useGetUsers();
+  } = useGetUsers(id);
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateUser();
@@ -118,12 +124,13 @@ const Example = () => {
 
   //UPDATE action
   const handleSaveUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    // console.log(values)
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
+    // const newValidationErrors = validateUser(values);
+    // // console.log(values)
+    // if (Object.values(newValidationErrors).some((error) => error)) {
+    //   setValidationErrors(newValidationErrors);
+    //   return;
+    // }
+    console.log(values); 
     setValidationErrors({});
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
@@ -175,7 +182,7 @@ const Example = () => {
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">Edit Employee</DialogTitle>
+        <DialogTitle variant="h4">Edit Details</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
@@ -256,13 +263,31 @@ function useCreateUser() {
 }
 
 //READ hook (get users from api)
-function useGetUsers() {
+function useGetUsers(id) {
+  const navigate = useNavigate();
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       //send api request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve(employeeDetails);
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        if (response.status === 401) {
+          cleaner();
+          navigate("/login");
+        }
+        throw new Error("Failed to fetch data");
+      }
+      const data = await response.json();
+      return data.job_assigns;
     },
     refetchOnWindowFocus: false,
   });
@@ -279,9 +304,10 @@ function useUpdateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
+      console.log(newUserInfo)
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.em_name === newUserInfo.em_name ? newUserInfo : prevUser
+          prevUser.name === newUserInfo.name ? newUserInfo : prevUser
         )
       );
     },
@@ -310,16 +336,16 @@ function useDeleteUser() {
 
 const queryClient = new QueryClient();
 
-const EmpDetails = () => (
+const EmpDetails = ( {id} ) => {
   //Put this with your other react-query providers near root of your app
-  <div className="w-full">
+  return (<div className="w-full">
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <QueryClientProvider client={queryClient}>
-        <Example />
+        <Example id={id}/>
       </QueryClientProvider>
     </LocalizationProvider>
-  </div>
-);
+  </div>)
+};
 
 export default EmpDetails;
 

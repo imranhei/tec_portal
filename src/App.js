@@ -16,17 +16,34 @@ import PrivateUserRoute from "./components/PrivateUserRoute";
 
 function App() {
   const navigate = useNavigate();
-  const login = useSelector((state) => state.userData.loggedIn)
+  const [isLoading, setIsLoading] = useState(true);
 
+  function isLoggedIn() {
+    const accessToken = localStorage.getItem("access_token");
+    // Check if the access token exists and is not expired
+    return accessToken !== null;
+  }
+  
   useEffect(() => {
-    if (!login) {
-      navigate("/login");
-    }
-  }, [login]);
+    const checkLoggedIn = async () => {
+      setIsLoading(true);
+      if (!isLoggedIn()) {
+        navigate("/login");
+      }
+      setIsLoading(false);
+    };
+
+    checkLoggedIn();
+  }, [navigate]);
+
+  // Render loading state if still loading
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex">
-      {login && (
+      {isLoggedIn() && (
         <div className={`fixed h-screen overflow-y-auto z-20 w-48`}>
           {/* Render Sidebar only if logged in */}
           <Sidebar />
@@ -34,7 +51,7 @@ function App() {
       )}
       <div
         className={`flex-1 overflow-auto ${
-          login ? "ml-48" : "ml-0"
+          isLoggedIn() ? "ml-48" : "ml-0"
         } p-4 bg-slate-100 min-h-screen`}
       >
         {/* Render different components based on user role */}
