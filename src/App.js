@@ -19,7 +19,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   function isLoggedIn() {
-    const accessToken = localStorage.getItem("access_token");
+    const accessToken = sessionStorage.getItem("access_token");
     // Check if the access token exists and is not expired
     return accessToken !== null;
   }

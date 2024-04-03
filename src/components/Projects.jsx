@@ -295,7 +295,6 @@ const Example = () => {
                 onChange={(e) =>
                   handleInputChange("job_number", e.target.value)
                 }
-                className="h-4"
               />
               <Input
                 label="Job Location"
@@ -336,7 +335,7 @@ const Example = () => {
             </div>
           </DialogContent>
           <DialogActions>
-            <MRT_EditActionButtons variant="text" table={table} row={tempRow} test={tempRow} />
+            <MRT_EditActionButtons variant="text" table={table} row={tempRow} />
           </DialogActions>
         </>
       );

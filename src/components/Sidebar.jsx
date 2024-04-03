@@ -112,7 +112,7 @@ export default function Sidebar() {
         Profile
       </Link>
       <p
-        className={`hover:bg-gray-200 p-2 border-b ${
+        className={`hover:bg-gray-200 p-2 border-b cursor-pointer ${
           location.pathname === "/login" ? "font-semibold text-blue-500" : ""
         }`}
         onClick={handleLogout}

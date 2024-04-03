@@ -24,14 +24,18 @@ const Register = () => {
           method: "POST",
           headers: {
             // Corrected the spelling of "Authorization"
-            "Accept": "application/json",
-            "Authorization": `Bearer ${sessionStorage.getItem("access_token")}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
           },
           body: formData, // Sending form data, no need to set content type explicitly
         }
       );
 
       if (response.ok) {
+        setUsername("");
+        setEmail("");
+        setPassword("");
+        setRole("");
         alert("User registered successfully!");
       } else {
         throw new Error("Failed to register user");
@@ -57,6 +61,7 @@ const Register = () => {
             <input
               type="text"
               id="username"
+              value={username}
               className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -71,6 +76,7 @@ const Register = () => {
             <input
               type="email"
               id="email"
+              value={email}
               className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -84,32 +90,47 @@ const Register = () => {
             </label>
             <input
               type="password"
-              id="confirm-password"
+              id="password"
+              value={password}
               className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="flex gap-6">
-          <label
-              className="block text-sm font-semibold text-gray-800"
-            >
-              Role :
+          <div className="flex gap-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              Role:
             </label>
-            <div className="flex gap-2">
-              <input
-                type="checkbox"
-                checked={role === "Super Admin"}
-                onChange={() => setRole("Super Admin")}
-              />
-              <p className="block text-sm font-semibold text-gray-800">Admin</p>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="checkbox"
-                checked={role === "Admin"}
-                onChange={() => setRole("Admin")}
-              />
-              <p className="block text-sm font-semibold text-gray-800">Electrician</p>
+            <div className="flex gap-4">
+              <div className="flex gap-1">
+                <input
+                  type="checkbox"
+                  checked={role === "Electrician"}
+                  onChange={() => setRole("Electrician")}
+                />
+                <p className="block text-sm font-semibold text-gray-800">
+                  Electrician
+                </p>
+              </div>
+              <div className="flex gap-1">
+                <input
+                  type="checkbox"
+                  checked={role === "Admin"}
+                  onChange={() => setRole("Admin")}
+                />
+                <p className="block text-sm font-semibold text-gray-800">
+                  Admin
+                </p>
+              </div>
+              <div className="flex gap-1">
+                <input
+                  type="checkbox"
+                  checked={role === "Super Admin"}
+                  onChange={() => setRole("Super Admin")}
+                />
+                <p className="block text-sm font-semibold text-gray-800">
+                  Super Admin
+                </p>
+              </div>
             </div>
           </div>
           <div className="mt-4">

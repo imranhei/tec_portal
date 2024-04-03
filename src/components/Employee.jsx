@@ -25,8 +25,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setLoggedIn } from "../redux/auth";
+import cleaner from "../storage/cleaner";
+// import { useDispatch, useSelector } from "react-redux";
+// import { setLoggedIn } from "../redux/auth";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -42,12 +43,12 @@ const Example = () => {
       {
         accessorKey: "id",
         header: "Id",
-        size: "small",
+        // size: "small",
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         enableEditing: false,
       },
@@ -60,14 +61,13 @@ const Example = () => {
         header: "Email",
       },
       {
-        accessorKey: 'roles',
+        accessorKey: "roles",
         header: "Role",
         editVariant: "select",
-        editSelectOptions: ["Super Admin", "Admin", "User"],
+        editSelectOptions: ["Super Admin", "Admin", "Electrician"],
         muiEditTextFieldProps: {
           select: true,
         },
-        // Cell: ({ row }) => row.original.roles[0],
       },
     ]
     // [validationErrors]
@@ -131,7 +131,7 @@ const Example = () => {
     createDisplayMode: "modal", //default ('row', and 'custom' are also available)
     editDisplayMode: "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
-    positionActionsColumn: 'last',
+    positionActionsColumn: "last",
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isLoadingUsersError
       ? {
@@ -169,7 +169,12 @@ const Example = () => {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          {internalEditComponents} {console.log(row.original)/* or render custom edit components here */}
+          {internalEditComponents}{" "}
+          {
+            console.log(
+              row.original
+            ) /* or render custom edit components here */
+          }
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -248,7 +253,7 @@ function useCreateUser() {
 //READ hook (get users from api)
 function useGetUsers() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -265,17 +270,26 @@ function useGetUsers() {
       if (!response.ok) {
         if (response.status === 401) {
           // Redirect to the login page
-          dispatch(setLoggedIn(false));
-          sessionStorage.removeItem("access_token");
+          // dispatch(setLoggedIn(false));
+          cleaner();
           navigate("/login");
         }
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
-      data.users.forEach(user => {
-        user.roles = user.roles[0]; // Convert array to string
-      });
-      return data.users;
+      const userRoles = JSON.parse(sessionStorage.getItem("user")).role;
+  
+      // Filter out the "Super Admin" role
+      const filteredUserData = data.users
+        .map((user) => {
+          const newUser = { ...user };
+          if (Array.isArray(newUser.roles)) {
+            newUser.roles = newUser.roles[0];
+          }
+          return newUser;
+        }).filter((user) => userRoles !== "Admin" || user.roles !== "Super Admin");
+
+      return filteredUserData;
     },
     refetchOnWindowFocus: false,
   });

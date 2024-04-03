@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Input } from "@material-tailwind/react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -21,7 +22,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { employeeDetails, usStates } from "../makeData";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
@@ -31,19 +31,28 @@ import cleaner from "../storage/cleaner";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-const Example = ({id}) => {
+const Example = ({ id }) => {
   const [validationErrors, setValidationErrors] = useState({});
-//   const navigate = useNavigate();
-//   const handleView = (row) => {
-//     navigate("/projects/view", { state: { row } });
-//   };
+  const [tempRow, setTempRow] = useState({id: "mrt-row-create"});
+
+  const handleInputChange = (field, value, row) => {
+    
+    setTempRow((prevTempRow) => ({
+      ...prevTempRow,
+      [field]: value,
+    }));
+  };
+
+  const handleSet = (row) => {
+    setTempRow(row);
+  }
 
   const columns = useMemo(
     () => [
       {
         accessorKey: "name",
         header: "Name",
-        enableEditing: false,
+        // enableEditing: false,
         size: 80,
         // enableColumnFilter: false,
         // Cell: ({ renderedCellValue }) => (
@@ -54,7 +63,11 @@ const Example = ({id}) => {
         // accessorFn: (originalRow) => new Date(originalRow?.assign_date),
         accessorKey: "assign_date",
         header: "Assign Date",
-        enableEditing: false,
+        // enableEditing: false,
+        muiEditTextFieldProps: {
+          type: "date",
+          required: true,
+        },
         // Cell: ({ row }) => row.original.assign_date,
         // muiEditTextFieldProps: {
         //   required: true,
@@ -82,12 +95,16 @@ const Example = ({id}) => {
       },
       {
         accessorKey: "completed_hours",
-        enableEditing: false,
+        // enableEditing: false,
         header: "Completed Hours",
         filterVariant: "range",
         filterFn: "between",
+        muiEditTextFieldProps: {
+          type: "number",
+          required: true,
+        },
       },
-    ],
+    ]
     // [validationErrors]
   );
 
@@ -109,16 +126,17 @@ const Example = ({id}) => {
     useDeleteUser();
 
   //CREATE action
-  const handleCreateUser = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
+  const handleCreateUser = async ({ values, table, row }) => {
+    // const newValidationErrors = validateUser(values);
 
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
+    // if (Object.values(newValidationErrors).some((error) => error)) {
+    //   setValidationErrors(newValidationErrors);
+    //   return;
+    // }
     setValidationErrors({});
-    // console.log(values);
-    await createUser(values);
+    console.log(row);
+    // return;
+    // await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
@@ -130,7 +148,7 @@ const Example = ({id}) => {
     //   setValidationErrors(newValidationErrors);
     //   return;
     // }
-    console.log(values); 
+    console.log(values);
     setValidationErrors({});
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
@@ -139,7 +157,7 @@ const Example = ({id}) => {
   //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.em_name);
+      deleteUser(row.original.id);
     }
   };
 
@@ -166,19 +184,60 @@ const Example = ({id}) => {
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
     //optionally customize modal content
-    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => (
-      <>
-        <DialogTitle variant="h3">Add New Employee</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
-          {internalEditComponents} {/* or render custom edit components here */}
-        </DialogContent>
-        <DialogActions>
-          <MRT_EditActionButtons variant="text" table={table} row={row} />
-        </DialogActions>
-      </>
-    ),
+    renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => {
+      const handleChange = (field, value) => {
+        handleInputChange(field, value, row.original);
+      };
+      return (
+        <>
+          <DialogTitle variant="h4">Add New Employee</DialogTitle>
+          <DialogContent
+            sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            {/* {internalEditComponents} */}
+            <div className="flex flex-col py-5 gap-6">
+              <Input
+                label="Name"
+                variant="static"
+                type="text"
+                defaultValue={tempRow?.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+              />
+              <Input
+                label="Assign Date"
+                variant="static"
+                type="date"
+                defaultValue={tempRow?.assign_date}
+                onChange={(e) =>
+                  handleChange("assign_date", e.target.value)
+                }
+              />
+              <Input
+                label="Assigned Hours"
+                variant="static"
+                type="number"
+                defaultValue={tempRow?.assign_hours}
+                onChange={(e) =>
+                  handleChange("assign_hours", e.target.value)
+                }
+              />
+              <Input
+                label="Completed Hours"
+                variant="static"
+                type="number"
+                defaultValue={tempRow?.completed_hours}
+                onChange={(e) =>
+                  handleChange("completed_hours", e.target.value)
+                }
+              />
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={tempRow} />
+          </DialogActions>
+        </>
+      );
+    },
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
@@ -212,7 +271,7 @@ const Example = ({id}) => {
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: ({ table }) => (
+    renderTopToolbarCustomActions: ({ table, row }) => (
       <Button
         variant="contained"
         onClick={() => {
@@ -250,6 +309,7 @@ function useCreateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
+      console.log("new user", newUserInfo);
       queryClient.setQueryData(["users"], (prevUsers) => [
         ...prevUsers,
         {
@@ -304,7 +364,11 @@ function useUpdateUser() {
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
-      console.log(newUserInfo)
+      const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
+      console.log(newUserInfo);
+      if (!Array.isArray(prevUsers)) {
+        return queryClient.setQueryData(["users"], []);
+      }
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
           prevUser.name === newUserInfo.name ? newUserInfo : prevUser
@@ -336,15 +400,17 @@ function useDeleteUser() {
 
 const queryClient = new QueryClient();
 
-const EmpDetails = ( {id} ) => {
+const EmpDetails = ({ id }) => {
   //Put this with your other react-query providers near root of your app
-  return (<div className="w-full">
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <QueryClientProvider client={queryClient}>
-        <Example id={id}/>
-      </QueryClientProvider>
-    </LocalizationProvider>
-  </div>)
+  return (
+    <div className="w-full">
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <QueryClientProvider client={queryClient}>
+          <Example id={id} />
+        </QueryClientProvider>
+      </LocalizationProvider>
+    </div>
+  );
 };
 
 export default EmpDetails;
