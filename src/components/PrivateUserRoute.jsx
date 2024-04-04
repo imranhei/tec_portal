@@ -29,7 +29,7 @@ const PrivateRoutes = () => {
 
     // Check if user role is "Admin"
     return (
-        user?.role === "User" ? <Outlet /> : <Navigate to="/login" />
+        user?.role === "Electrician" ? <Outlet /> : <Navigate to="/login" />
     )
 }
 

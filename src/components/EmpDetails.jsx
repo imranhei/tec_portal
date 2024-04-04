@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Input } from "@material-tailwind/react";
+import { useMemo, useState, useEffect } from "react";
+import { Input, Select, Option } from "@material-tailwind/react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -33,26 +33,46 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const Example = ({ id }) => {
   const [validationErrors, setValidationErrors] = useState({});
-  const [tempRow, setTempRow] = useState({id: "mrt-row-create"});
+  const [tempRow, setTempRow] = useState({ id: "mrt-row-create" });
+  const [employeeList, setEmployeeList] = useState([]);
 
-  const handleInputChange = (field, value, row) => {
-    
+  useEffect(() => {
+    fetch("https://backend.tec.ampectech.com/api/electricians", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const electricians = data.electricians.map((item) => ({
+          id: item.id,
+          name: item.name,
+        }));
+        setEmployeeList(electricians);
+      });
+  }, []);
+
+  const handleInputChange = (field, value) => {
     setTempRow((prevTempRow) => ({
       ...prevTempRow,
       [field]: value,
     }));
   };
 
-  const handleSet = (row) => {
-    setTempRow(row);
-  }
-
   const columns = useMemo(
     () => [
       {
+        accessorKey: "user_id",
+        header: "ID",
+        size: 30,
+        enableEditing: false,
+      },
+      {
         accessorKey: "name",
         header: "Name",
-        // enableEditing: false,
+        enableEditing: false,
         size: 80,
         // enableColumnFilter: false,
         // Cell: ({ renderedCellValue }) => (
@@ -63,7 +83,7 @@ const Example = ({ id }) => {
         // accessorFn: (originalRow) => new Date(originalRow?.assign_date),
         accessorKey: "assign_date",
         header: "Assign Date",
-        // enableEditing: false,
+        enableEditing: false,
         muiEditTextFieldProps: {
           type: "date",
           required: true,
@@ -99,6 +119,7 @@ const Example = ({ id }) => {
         header: "Completed Hours",
         filterVariant: "range",
         filterFn: "between",
+        enableEditing: false,
         muiEditTextFieldProps: {
           type: "number",
           required: true,
@@ -110,7 +131,7 @@ const Example = ({ id }) => {
 
   //call CREATE hook
   const { mutateAsync: createUser, isPending: isCreatingUser } =
-    useCreateUser();
+    useCreateUser(id);
   //call READ hook
   const {
     data: employeeDetails = [],
@@ -120,10 +141,10 @@ const Example = ({ id }) => {
   } = useGetUsers(id);
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
-    useUpdateUser();
+    useUpdateUser(id);
   //call DELETE hook
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteUser();
+    useDeleteUser(id);
 
   //CREATE action
   const handleCreateUser = async ({ values, table, row }) => {
@@ -134,9 +155,19 @@ const Example = ({ id }) => {
     //   return;
     // }
     setValidationErrors({});
-    console.log(row);
-    // return;
-    // await createUser(values);
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const employee = employeeList.find((item) => item.id == tempRow.user_id);
+    const name = employee ? employee.name : "Unknown";
+    const modifiedJson = {
+      ...tempRow,
+      name: name,
+      assign_date: formattedDate,
+      completed_hours: 0,
+    };
+    await createUser(modifiedJson);
     table.setCreatingRow(null); //exit creating mode
   };
 
@@ -148,7 +179,6 @@ const Example = ({ id }) => {
     //   setValidationErrors(newValidationErrors);
     //   return;
     // }
-    console.log(values);
     setValidationErrors({});
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
@@ -157,7 +187,7 @@ const Example = ({ id }) => {
   //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser(row.original.id);
+      deleteUser(row.original.user_id);
     }
   };
 
@@ -186,50 +216,57 @@ const Example = ({ id }) => {
     //optionally customize modal content
     renderCreateRowDialogContent: ({ table, row, internalEditComponents }) => {
       const handleChange = (field, value) => {
-        handleInputChange(field, value, row.original);
+        handleInputChange(field, value);
       };
       return (
         <>
-          <DialogTitle variant="h4">Add New Employee</DialogTitle>
+          <DialogTitle variant="h4">Assign Employee</DialogTitle>
           <DialogContent
             sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
           >
             {/* {internalEditComponents} */}
             <div className="flex flex-col py-5 gap-6">
-              <Input
+              {/* <Input
                 label="Name"
-                variant="static"
+                variant="standard"
                 type="text"
                 defaultValue={tempRow?.name}
                 onChange={(e) => handleChange("name", e.target.value)}
-              />
-              <Input
+              /> */}
+              <Select
+                variant="standard"
+                label="Select Name"
+                onChange={(e) => handleChange("user_id", e)}
+              >
+                {employeeList?.map((item) => (
+                  <Option key={item?.id} value={String(item?.id)}>
+                    {item?.name}
+                  </Option>
+                ))}
+              </Select>
+              {/* <Input
                 label="Assign Date"
-                variant="static"
+                variant="standard"
                 type="date"
                 defaultValue={tempRow?.assign_date}
-                onChange={(e) =>
-                  handleChange("assign_date", e.target.value)
-                }
-              />
+                onChange={(e) => handleChange("assign_date", e.target.value)}
+              /> */}
               <Input
                 label="Assigned Hours"
-                variant="static"
+                variant="standard"
                 type="number"
                 defaultValue={tempRow?.assign_hours}
-                onChange={(e) =>
-                  handleChange("assign_hours", e.target.value)
-                }
+                onChange={(e) => handleChange("assign_hours", e.target.value)}
               />
-              <Input
+              {/* <Input
                 label="Completed Hours"
-                variant="static"
+                variant="standard"
                 type="number"
                 defaultValue={tempRow?.completed_hours}
                 onChange={(e) =>
                   handleChange("completed_hours", e.target.value)
                 }
-              />
+              /> */}
             </div>
           </DialogContent>
           <DialogActions>
@@ -284,7 +321,7 @@ const Example = ({ id }) => {
           // );
         }}
       >
-        Add New Employee
+        Assign Employee
       </Button>
     ),
     state: {
@@ -292,6 +329,9 @@ const Example = ({ id }) => {
       isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
+      // columnVisibility: {
+      //   user_id: false,
+      // },
     },
   });
 
@@ -299,17 +339,44 @@ const Example = ({ id }) => {
 };
 
 //CREATE hook (post new user to api)
-function useCreateUser() {
+function useCreateUser(id) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
       //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      console.log(user);
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${id}/assign-users`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+          },
+          body: JSON.stringify({
+            user_ids: [user.user_id],
+            assign_hours: [user.assign_hours],
+          }),
+        }
+      );
+      if (!response.ok) {
+        if (response.status === 401) {
+          cleaner();
+          navigate("/login");
+        }
+        throw new Error("Failed to fetch data");
+      }
+      const data = await response.json();
+      console.log(data);
+      return;
     },
     //client side optimistic update
     onMutate: (newUserInfo) => {
-      console.log("new user", newUserInfo);
+      const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
+      if (!Array.isArray(prevUsers)) {
+        return queryClient.setQueryData(["users"], []);
+      }
       queryClient.setQueryData(["users"], (prevUsers) => [
         ...prevUsers,
         {
@@ -318,7 +385,7 @@ function useCreateUser() {
         },
       ]);
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -354,47 +421,84 @@ function useGetUsers(id) {
 }
 
 //UPDATE hook (put user in api)
-function useUpdateUser() {
+function useUpdateUser(id) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (user) => {
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      // Send PUT request to update user
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${id}/users/${user.user_id}/assign-hours`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+          },
+          body: JSON.stringify({ assign_hours: user.assign_hours }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
+      // Assuming the response is JSON
+      const data = await response.json();
+      console.log(data);
+
+      // Return data if needed
+      return data;
     },
+
     //client side optimistic update
     onMutate: (newUserInfo) => {
       const prevUsers = queryClient.getQueryData(["users"]); // Get prevUsers from cache
-      console.log(newUserInfo);
       if (!Array.isArray(prevUsers)) {
         return queryClient.setQueryData(["users"], []);
       }
       queryClient.setQueryData(["users"], (prevUsers) =>
         prevUsers?.map((prevUser) =>
-          prevUser.name === newUserInfo.name ? newUserInfo : prevUser
+          prevUser.user_id === newUserInfo.user_id ? newUserInfo : prevUser
         )
       );
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users"] }), //refetch users after mutation, disabled for demo
   });
 }
 
 //DELETE hook (delete user in api)
-function useDeleteUser() {
+function useDeleteUser(id) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (userId) => {
       //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/jobs/${id}/users/${userId}/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+      // Assuming the response is JSON
+      const data = await response.json();
+      console.log(data)
+
+      // Return data if needed
+      return data;
     },
     //client side optimistic update
     onMutate: (userId) => {
       queryClient.setQueryData(["users"], (prevUsers) =>
-        prevUsers?.filter((user) => user.em_name !== userId)
+        prevUsers?.filter((user) => user.user_id !== userId)
       );
     },
-    // onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['users'] }), //refetch users after mutation, disabled for demo
   });
 }
 

@@ -79,7 +79,7 @@ export default function Sidebar() {
           </Link>
         </>
       )}
-      {user?.role === "User" && (
+      {user?.role === "Electrician" && (
         <>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${

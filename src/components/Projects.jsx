@@ -289,7 +289,7 @@ const Example = () => {
             <div className="flex flex-col py-5 gap-6">
               <Input
                 label="Job Number"
-                variant="static"
+                variant="standard"
                 type="text"
                 defaultValue={tempRow?.job_number}
                 onChange={(e) =>
@@ -298,7 +298,7 @@ const Example = () => {
               />
               <Input
                 label="Job Location"
-                variant="static"
+                variant="standard"
                 type="text"
                 defaultValue={tempRow?.job_location}
                 onChange={(e) =>
@@ -307,7 +307,7 @@ const Example = () => {
               />
               <Input
                 label="Total Hours"
-                variant="static"
+                variant="standard"
                 type="number"
                 defaultValue={tempRow?.total_hours}
                 onChange={(e) =>
@@ -316,7 +316,7 @@ const Example = () => {
               />
               <Input
                 label="Start Date"
-                variant="static"
+                variant="standard"
                 type="date"
                 defaultValue={tempRow?.start_date}
                 onChange={(e) =>
@@ -325,7 +325,7 @@ const Example = () => {
               />
               <Input
                 label="Completion Date"
-                variant="static"
+                variant="standard"
                 type="date"
                 defaultValue={tempRow?.completion_date}
                 onChange={(e) =>

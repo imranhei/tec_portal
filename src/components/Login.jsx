@@ -35,7 +35,7 @@ const Login = () => {
         sessionStorage.setItem("user", JSON.stringify(data.user));
         if (data.user.role === "Super Admin" || data.user.role === "Admin") {
           navigate("/projects");
-        } else if (data.user.role === "User") {
+        } else if (data.user.role === "Electrician") {
           navigate("/current-jobs");
         }
       }
