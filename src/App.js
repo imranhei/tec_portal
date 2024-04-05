@@ -10,9 +10,9 @@ import View from "./components/View";
 import CurrentJobs from "./components/CurrentJobs";
 import History from "./components/History";
 import Employee from "./components/Employee";
-import { useSelector } from "react-redux";
 import PrivateAdminRoute from "./components/PrivateAdminRoute";
 import PrivateUserRoute from "./components/PrivateUserRoute";
+import JobSheet from "./components/JobSheet";
 
 function App() {
   const navigate = useNavigate();
@@ -64,6 +64,7 @@ function App() {
             <Route path="/employee" element={<Employee />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/view" element={<View />} />
+            <Route path="/job-sheet" element={<JobSheet />} />
           </Route>
           <Route element={<PrivateUserRoute />}>
           {/* Only users are allowed to view this routes */}

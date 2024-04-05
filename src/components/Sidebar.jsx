@@ -59,6 +59,16 @@ export default function Sidebar() {
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
+              location.pathname === "/job-sheet"
+                ? "font-semibold text-blue-500"
+                : ""
+            }`}
+            to="/job-sheet"
+          >
+            Job Sheet
+          </Link>
+          <Link
+            className={`hover:bg-gray-200 p-2 border-b ${
               location.pathname === "/employee"
                 ? "font-semibold text-blue-500"
                 : ""
