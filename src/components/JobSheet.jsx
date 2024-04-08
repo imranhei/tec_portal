@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import { Input, Button, IconButton } from "@material-tailwind/react";
 
 export default function JobSheet() {
+  const [textareaHeight, setTextareaHeight] = useState("50px");
+  const [textareaHeight2, setTextareaHeight2] = useState("50px");
   const [rows, setRows] = useState([
     { quantity: "", description: "" },
     { quantity: "", description: "" },
@@ -52,8 +55,26 @@ export default function JobSheet() {
     }));
   };
 
+  const componentRef = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+  const handleHeight = (e) => {
+    // setText(e.target.value);
+    const newHeight = e.target.scrollHeight + 1 + "px";
+    setTextareaHeight(newHeight);
+  };
+  const handleHeight2 = (e) => {
+    // setText(e.target.value);
+    const newHeight = e.target.scrollHeight + 1 + "px";
+    setTextareaHeight2(newHeight);
+  };
+
   return (
-    <div className="px-6 py-4 w-[700px] border shadow mx-auto">
+    <div
+      className="px-6 py-10 w-[700px] border print:border-none shadow print:shadow-none mx-auto text-sm"
+      ref={componentRef}
+    >
       <h1 className="text-center text-2xl font-bold pb-2">
         TOTAL ELECTRICAL CONNECTION PTY LTD
       </h1>
@@ -96,7 +117,7 @@ export default function JobSheet() {
             <p>Work Authorised By :</p>
             <input
               type="text"
-              className="border-b outline-none focus:border-b-black pl-2 w-[170px]"
+              className="border-b outline-none focus:border-b-black pl-2 w-[190px]"
             />
           </div>
         </div>
@@ -107,19 +128,27 @@ export default function JobSheet() {
             className="border-b outline-none focus:border-b-black pl-2 flex-1"
           />
         </div>
-        <div className="flex w-full">
+        <div className="w-full">
           <p>Reason Work was Carried Out :</p>
-          <input
+          <textarea
+            style={{ height: textareaHeight }}
             type="text"
-            className="border-b outline-none focus:border-b-black pl-2 flex-1"
+            className="border-b outline-none focus:border-b-black pl-2 w-full"
+            onChange={(e) => {
+              handleHeight(e);
+            }}
           />
         </div>
         <h1 className="underline">Description of Work</h1>
-        <div className="flex w-full">
+        <div className="w-full">
           <p>Performed :</p>
-          <input
+          <textarea
+            style={{ height: textareaHeight2 }}
             type="text"
-            className="border-b outline-none focus:border-b-black pl-2 flex-1"
+            className="border-b outline-none focus:border-b-black pl-2 w-full"
+            onChange={(e) => {
+              handleHeight2(e);
+            }}
           />
         </div>
         <div className="h-4"></div>
@@ -158,7 +187,7 @@ export default function JobSheet() {
                     className="w-full outline-none focus:bg-gray-200 py-1 px-1"
                   />
                 </td>
-                <td className="border border-gray-400 w-8">
+                <td className="border border-gray-400 w-8 print:hidden">
                   <button
                     className="text-red-400 hover:text-red-500"
                     onClick={() => handleDeleteRow(index)}
@@ -183,7 +212,7 @@ export default function JobSheet() {
         <Button
           size="sm"
           onClick={addRow}
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded print:hidden"
         >
           Add Row
         </Button>
@@ -196,28 +225,25 @@ export default function JobSheet() {
               </th>
             </tr>
             <tr>
-              {["Leading Hand", "Tradesman", "Apprentice"].map((role) => (
-                <>
+              {["Leading Hand", "Tradesman", "Apprentice"].map(
+                (role, index) => (
                   <th
-                    key={`${role}-nt`}
+                    key={role}
                     className="border border-gray-400 py-1"
                     colSpan="2"
                   >
                     {role} (Hours)
                   </th>
-                </>
-              ))}
+                )
+              )}
             </tr>
           </thead>
           <tbody>
             {["nt", "shift", "ot"].map((time) => (
               <tr key={time}>
                 {["leading_head", "tradesman", "apprentice"].map((type) => (
-                  <>
-                    <td
-                      key={`${type}-${time}`}
-                      className="border border-gray-400 px-1"
-                    >
+                  <React.Fragment key={`${type}-${time}`}>
+                    <td key={type} className="border border-gray-400 px-1">
                       {time.toUpperCase()}
                     </td>
                     <td
@@ -228,24 +254,28 @@ export default function JobSheet() {
                         type="number"
                         name={time}
                         value={rows2[type][time]}
-                        onChange={(e) => handleInputChange2(type, time, e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange2(type, time, e.target.value)
+                        }
                         className="w-full outline-none focus:bg-gray-200 py-1 px-1"
                       />
                     </td>
-                  </>
+                  </React.Fragment>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <Button
+      <div className="flex justify-center items-center mt-4">
+        <Button
           size="sm"
-          onClick={() => window.print()}
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handlePrint}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded print:hidden"
         >
-          print
+          Print
         </Button>
+      </div>
     </div>
   );
 }
