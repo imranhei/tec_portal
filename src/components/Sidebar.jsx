@@ -44,7 +44,7 @@ export default function Sidebar() {
   return (
     <div className="h-full p-4 border-r flex flex-col">
       <img src="/tec_logo.png" alt="" className="w-24 mx-auto pb-4" />
-      {(user?.role === "Super Admin" ||user?.role === "Admin") && (
+      {(user?.role === "Super Admin" || user?.role === "Admin") && (
         <>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
@@ -56,16 +56,6 @@ export default function Sidebar() {
             to="/projects"
           >
             Projects
-          </Link>
-          <Link
-            className={`hover:bg-gray-200 p-2 border-b ${
-              location.pathname === "/job-sheet"
-                ? "font-semibold text-blue-500"
-                : ""
-            }`}
-            to="/job-sheet"
-          >
-            Job Sheet
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
@@ -100,6 +90,16 @@ export default function Sidebar() {
             to="/current-jobs"
           >
             Current Jobs
+          </Link>
+          <Link
+            className={`hover:bg-gray-200 p-2 border-b ${
+              location.pathname === "/jobsheet"
+                ? "font-semibold text-blue-500"
+                : ""
+            }`}
+            to="/jobsheet"
+          >
+            Job Sheet
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${

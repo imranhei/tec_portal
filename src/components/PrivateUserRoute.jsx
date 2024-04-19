@@ -26,6 +26,7 @@ const PrivateRoutes = () => {
         console.Console.log("PrivateRoutes")
         return <Navigate to="/login" />;
     }
+    // console.log(user?.role) 
 
     // Check if user role is "Admin"
     return (

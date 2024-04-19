@@ -25,6 +25,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ViewIcon from "@mui/icons-material/Visibility";
+import { useSelector, useDispatch } from "react-redux";
+import { setJobs } from "../redux/currentJobs"; 
 import { useNavigate } from "react-router-dom";
 import cleaner from "../storage/cleaner";
 
@@ -237,6 +239,7 @@ const Example = () => {
 };
 
 function useGetUsers() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   return useQuery({
     queryKey: ["users"],
@@ -263,6 +266,7 @@ function useGetUsers() {
         ...job,
         ...job_assigns,
       }));
+      dispatch(setJobs(modifiedData));
 
       return modifiedData;
     },

@@ -29,7 +29,7 @@ const Login = () => {
       localStorage.setItem("access_token", data.access_token);
 
       // Token refresh logic
-      await handleTokenRefresh(data.access_token);
+      if(data?.access_token)await handleTokenRefresh(data.access_token);
 
       if (data?.user) {
         sessionStorage.setItem("user", JSON.stringify(data.user));

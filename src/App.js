@@ -69,6 +69,7 @@ function App() {
           <Route element={<PrivateUserRoute />}>
           {/* Only users are allowed to view this routes */}
             <Route path="/current-jobs" element={<CurrentJobs />} />
+            <Route path="/jobsheet" element={<JobSheet />} />
             <Route path="/history" element={<History />} />
           </Route>
         </Routes>

@@ -1,10 +1,14 @@
 import React, { useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Input, Button, IconButton } from "@material-tailwind/react";
+import { Input, Button, IconButton, Select, Option } from "@material-tailwind/react";
+import { useSelector } from "react-redux";
 
 export default function JobSheet() {
+  const { jobs } = useSelector((state) => state.currentJobs);
+  // console.log(jobs);
   const [textareaHeight, setTextareaHeight] = useState("50px");
   const [textareaHeight2, setTextareaHeight2] = useState("50px");
+  const [date, setDate] = useState("");
   const [rows, setRows] = useState([
     { quantity: "", description: "" },
     { quantity: "", description: "" },
@@ -57,7 +61,7 @@ export default function JobSheet() {
 
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    content: () => componentRef.current
   });
   const handleHeight = (e) => {
     // setText(e.target.value);
@@ -108,10 +112,21 @@ export default function JobSheet() {
         <div className="flex gap-2 w-full">
           <div className="flex w-1/2">
             <p>Job No :</p>
-            <input
+            {/* <input
               type="text"
               className="border-b outline-none focus:border-b-black pl-2 flex-1"
-            />
+            /> */}
+            <select
+              className="w-60 border-b"
+              // onChange={(e) => handleChange("user_id", e)}
+            >
+              <option value="" style={{ opacity: 0.25 }} className=""></option>
+              {jobs?.map((item) => (
+                <option key={item?.job_number} value={item?.job_number}>
+                  {item?.job_number}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex w-1/2">
             <p>Work Authorised By :</p>
@@ -124,8 +139,12 @@ export default function JobSheet() {
         <div className="flex w-full">
           <p>Date Work Performed :</p>
           <input
-            type="text"
-            className="border-b outline-none focus:border-b-black pl-2 flex-1"
+            value={date}
+            type="date"
+            className={`border-b outline-none focus:border-b-black pl-2 flex-1 ${
+              date ? "" : "opacity-50"
+            }`}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
         <div className="w-full">
@@ -268,13 +287,13 @@ export default function JobSheet() {
         </table>
       </div>
       <div className="flex justify-center items-center mt-4">
-        <Button
+        <IconButton
           size="sm"
           onClick={handlePrint}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded print:hidden"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-10 rounded print:hidden"
         >
           Print
-        </Button>
+        </IconButton>
       </div>
     </div>
   );
