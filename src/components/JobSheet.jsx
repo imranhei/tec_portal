@@ -1,67 +1,85 @@
 import React, { useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Input, Button, IconButton, Select, Option } from "@material-tailwind/react";
+import {
+  Input,
+  Button,
+  IconButton,
+  Select,
+  Option,
+  Tooltip,
+  PlusIcon,
+} from "@material-tailwind/react";
 import { useSelector } from "react-redux";
 
 export default function JobSheet() {
   const { jobs } = useSelector((state) => state.currentJobs);
-  // console.log(jobs);
+  const [open, setOpen] = React.useState(false);
   const [textareaHeight, setTextareaHeight] = useState("50px");
   const [textareaHeight2, setTextareaHeight2] = useState("50px");
-  const [date, setDate] = useState("");
-  const [rows, setRows] = useState([
-    { quantity: "", description: "" },
-    { quantity: "", description: "" },
-  ]);
 
-  const [rows2, setRows2] = useState({
-    leading_head: {
-      nt: "",
-      shift: "",
-      ot: "",
-    },
-    tradesman: {
-      nt: "",
-      shift: "",
-      ot: "",
-    },
-    apprentice: {
-      nt: "",
-      shift: "",
-      ot: "",
+  const [data, setData] = useState({
+    store: "",
+    floor: "",
+    department: "",
+    job_no: "",
+    work_authorised_by: "",
+    date: "",
+    reason: "",
+    performed: "",
+    materials: [
+      { quantity: "", description: "" },
+      { quantity: "", description: "" },
+    ],
+    labour: {
+      leading: {
+        Nt: "",
+        shift: "",
+        ot: "",
+      },
+      tradesman: {
+        Nt: "",
+        shift: "",
+        ot: "",
+      },
+      apprentice: {
+        Nt: "",
+        shift: "",
+        ot: "",
+      },
     },
   });
 
   const handleInputChange = (index, e) => {
     const { name, value } = e.target;
-    const newRows = [...rows];
-    newRows[index][name] = value;
-    setRows(newRows);
-  };
+    const list = [...data.materials];
+    list[index][name] = value;
+    setData({ ...data, materials: list });
+  }
+
+  // const handleOpen = (value) => setSize(value);
 
   const addRow = () => {
-    setRows([...rows, { quantity: "", description: "" }]);
+    setData({
+      ...data,
+      materials: [...data.materials, { quantity: "", description: "" }],
+    });
   };
 
   const handleDeleteRow = (index) => {
-    const newRows = [...rows];
-    newRows.splice(index, 1);
-    setRows(newRows);
+    const list = [...data.materials];
+    list.splice(index, 1);
+    setData({ ...data, materials: list });
   };
-
-  const handleInputChange2 = (laborType, timeType, value) => {
-    setRows2((prevRows) => ({
-      ...prevRows,
-      [laborType]: {
-        ...prevRows[laborType],
-        [timeType]: value,
-      },
-    }));
+ 
+  const handleInputChange2 = (type, time, value) => {
+    const list = { ...data.labour };
+    list[type][time] = value;
+    setData({ ...data, labour: list });
   };
 
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current
+    content: () => componentRef.current,
   });
   const handleHeight = (e) => {
     // setText(e.target.value);
@@ -72,6 +90,26 @@ export default function JobSheet() {
     // setText(e.target.value);
     const newHeight = e.target.scrollHeight + 1 + "px";
     setTextareaHeight2(newHeight);
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch("https://backend.tec.ampectech.com/api/jobsheets", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save job sheet");
+      }
+      alert("Job sheet saved successfully");
+    } catch (error) {
+      console.error("Error saving job sheet:", error);
+      alert("Failed to save job sheet");
+    }
   };
 
   return (
@@ -90,33 +128,39 @@ export default function JobSheet() {
           <div className="flex w-1/2">
             <p>Store :</p>
             <input
+              defaultValue={data?.store} 
               type="text"
               className="border-b outline-none focus:border-b-black pl-2 flex-1"
+              onChange={(e) => setData({ ...data, store: e.target.value })}
             />
           </div>
           <div className="flex w-1/2">
             <p>Floor/Level :</p>
             <input
+              defaultValue={data?.floor}
               type="text"
               className="border-b outline-none focus:border-b-black pl-2 flex-1"
-            />
+              onChange={(e) => {setData({ ...data, floor: e.target.value })}}
+            /> 
           </div>
         </div>
         <div className="flex w-full">
           <p>Department/Location :</p>
           <input
+            value={data?.department}
             type="text"
             className="border-b outline-none focus:border-b-black pl-2 flex-1"
+            onChange={(e) => setData({ ...data, department: e.target.value })}
           />
         </div>
         <div className="flex gap-2 w-full">
-          <div className="flex w-1/2">
-            <p>Job No :</p>
-            {/* <input
+          {/* <div className="flex w-1/2">
+            <p>Job No :</p> */}
+          {/* <input
               type="text"
               className="border-b outline-none focus:border-b-black pl-2 flex-1"
             /> */}
-            <select
+          {/* <select
               className="w-60 border-b"
               // onChange={(e) => handleChange("user_id", e)}
             >
@@ -127,34 +171,62 @@ export default function JobSheet() {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="flex w-1/2">
-            <p>Work Authorised By :</p>
+          </div> */}
+          <div className="flex w-1/2 relative items-center">
+            <p>Job No :</p>
             <input
               type="text"
+              value={data?.job_no}
+              list="jobNumbers"
+              className="w-60 border-b px-1 focus:outline-none"
+              onChange={(e) => setData({ ...data, job_no: e.target.value })}
+            />
+            <datalist
+              id="jobNumbers"
+              //className="absolute top-full left-0 w-full max-h-10 overflow-y-auto bg-white border border-gray-300 rounded"
+            >
+              <option value="" style={{ opacity: 0.25 }} className=""></option>
+              {jobs?.map((item) => (
+                <option key={item?.job_number} value={item?.job_number}>
+                  {item?.job_number}
+                </option>
+              ))}
+            </datalist>
+            <Tooltip content="Add in the suggestion list">
+              <Button disabled={false} variant="outlined" className="px-2 py-1">+</Button>
+            </Tooltip>
+          </div>
+          <div className="flex w-1/2 items-center">
+            <p>Work Authorised By :</p>
+            <input
+              value={data?.work_authorised_by}
+              type="text"
               className="border-b outline-none focus:border-b-black pl-2 w-[190px]"
+              onChange={(e) => setData({ ...data, work_authorised_by: e.target.value })}
             />
           </div>
         </div>
         <div className="flex w-full">
           <p>Date Work Performed :</p>
           <input
-            value={date}
+            value={data?.date}
             type="date"
             className={`border-b outline-none focus:border-b-black pl-2 flex-1 ${
-              date ? "" : "opacity-50"
+              data?.date ? "" : "opacity-50"
             }`}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => setData({ ...data, date: e.target.value })}
           />
         </div>
         <div className="w-full">
           <p>Reason Work was Carried Out :</p>
           <textarea
+            value={data?.reason}
             style={{ height: textareaHeight }}
             type="text"
-            className="border-b outline-none focus:border-b-black pl-2 w-full"
+            className="border-b outline-none focus:border-b-black w-full"
             onChange={(e) => {
               handleHeight(e);
+              setData({ ...data, reason: e.target.value });
             }}
           />
         </div>
@@ -162,11 +234,13 @@ export default function JobSheet() {
         <div className="w-full">
           <p>Performed :</p>
           <textarea
+            value={data?.performed}
             style={{ height: textareaHeight2 }}
             type="text"
-            className="border-b outline-none focus:border-b-black pl-2 w-full"
+            className="border-b outline-none focus:border-b-black w-full"
             onChange={(e) => {
               handleHeight2(e);
+              setData({ ...data, performed: e.target.value });
             }}
           />
         </div>
@@ -186,7 +260,7 @@ export default function JobSheet() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {data.materials.map((row, index) => (
               <tr key={index}>
                 <td className="border border-gray-400 w-24">
                   <input
@@ -258,9 +332,9 @@ export default function JobSheet() {
             </tr>
           </thead>
           <tbody>
-            {["nt", "shift", "ot"].map((time) => (
+            {["Nt", "shift", "ot"].map((time) => (
               <tr key={time}>
-                {["leading_head", "tradesman", "apprentice"].map((type) => (
+                {["leading", "tradesman", "apprentice"].map((type) => (
                   <React.Fragment key={`${type}-${time}`}>
                     <td key={type} className="border border-gray-400 px-1">
                       {time.toUpperCase()}
@@ -272,7 +346,7 @@ export default function JobSheet() {
                       <input
                         type="number"
                         name={time}
-                        value={rows2[type][time]}
+                        value={data?.labour[type][time]}
                         onChange={(e) =>
                           handleInputChange2(type, time, e.target.value)
                         }
@@ -286,13 +360,20 @@ export default function JobSheet() {
           </tbody>
         </table>
       </div>
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex justify-center items-center gap-4 mt-4">
         <IconButton
           size="sm"
           onClick={handlePrint}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-10 rounded print:hidden"
         >
           Print
+        </IconButton> 
+        <IconButton
+          size="sm"
+          onClick={handleSave}
+          className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-10 rounded print:hidden"
+        >
+          Save
         </IconButton>
       </div>
     </div>
