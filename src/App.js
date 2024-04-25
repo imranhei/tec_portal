@@ -13,17 +13,19 @@ import Employee from "./components/Employee";
 import PrivateAdminRoute from "./components/PrivateAdminRoute";
 import PrivateUserRoute from "./components/PrivateUserRoute";
 import JobSheet from "./components/JobSheet";
+import JobSheets from "./components/JobSheets";
 
 function App() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
   function isLoggedIn() {
     const accessToken = sessionStorage.getItem("access_token");
     // Check if the access token exists and is not expired
     return accessToken !== null;
   }
-  
+
   useEffect(() => {
     const checkLoggedIn = async () => {
       setIsLoading(true);
@@ -44,30 +46,72 @@ function App() {
   return (
     <div className="flex">
       {isLoggedIn() && (
-        <div className={`fixed h-screen overflow-y-auto z-20 w-48`}>
+        <div
+          className={`fixed h-screen overflow-y-auto z-20 bg-white md:left-0 ${
+            open ? "left-0 w-48" : "-left-48 w-60"
+          } md:w-48 transition-all`}
+        >
+          <button
+            className={`absolute top-6 block md:hidden transition-all z-10 ${
+              open ? "left-40" : "left-[204px]"
+            }`}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                className="h-6 w-6"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
+          </button>
           {/* Render Sidebar only if logged in */}
-          <Sidebar />
+          <Sidebar open={open}/>
         </div>
       )}
       <div
-        className={`flex-1 overflow-auto ${
-          isLoggedIn() ? "ml-48" : "ml-0"
+        className={`flex-1 overflow-auto transition-all ${
+          isLoggedIn() ? "md:ml-48 ml-10" : "ml-0"
         } p-4 bg-slate-100 min-h-screen`}
       >
         {/* Render different components based on user role */}
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<PrivateAdminRoute />}>
-          {/* Only admins are allowed to view this routes */}
+            {/* Only admins are allowed to view this routes */}
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Projects />} />
+            <Route path="/jobsheets" element={<JobSheets />} />
             <Route path="/employee" element={<Employee />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/view" element={<View />} />
-            <Route path="/job-sheet" element={<JobSheet />} />
+            <Route path="/jobsheets/view" element={<JobSheet />} />
           </Route>
           <Route element={<PrivateUserRoute />}>
-          {/* Only users are allowed to view this routes */}
+            {/* Only users are allowed to view this routes */}
             <Route path="/current-jobs" element={<CurrentJobs />} />
             <Route path="/jobsheet" element={<JobSheet />} />
             <Route path="/history" element={<History />} />

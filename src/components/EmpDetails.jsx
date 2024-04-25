@@ -345,7 +345,7 @@ function useCreateUser(id) {
   return useMutation({
     mutationFn: async (user) => {
       //send api update request here
-      console.log(user);
+      // console.log(user);
       const response = await fetch(
         `https://backend.tec.ampectech.com/api/jobs/${id}/assign-users`,
         {

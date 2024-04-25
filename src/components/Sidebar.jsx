@@ -3,11 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
 // import { setLoggedIn } from "../redux/auth";
 
-export default function Sidebar() {
+export default function Sidebar( {open} ) {
   const location = useLocation();
   const navigate = useNavigate();
-  // const dispatch = useDispatch();
-  // const user = useSelector((state) => state.userData.user);
   const [user, setUser] = useState(null);
 
   // Effect to retrieve user data from session storage
@@ -42,7 +40,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="h-full p-4 border-r flex flex-col">
+    <div className={`h-full p-4 md:px-4 ${open ? "" : "px-12"} border-r flex flex-col relative`}>
       <img src="/tec_logo.png" alt="" className="w-24 mx-auto pb-4" />
       {(user?.role === "Super Admin" || user?.role === "Admin") && (
         <>
@@ -56,6 +54,16 @@ export default function Sidebar() {
             to="/projects"
           >
             Projects
+          </Link>
+          <Link
+            className={`hover:bg-gray-200 p-2 border-b ${
+              location.pathname.startsWith("/jobsheets")
+                ? "font-semibold text-blue-500"
+                : ""
+            }`}
+            to="/jobsheets"
+          >
+            Job Sheets
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
