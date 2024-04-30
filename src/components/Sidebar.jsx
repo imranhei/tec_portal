@@ -57,16 +57,6 @@ export default function Sidebar( {open} ) {
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
-              location.pathname.startsWith("/jobsheets")
-                ? "font-semibold text-blue-500"
-                : ""
-            }`}
-            to="/jobsheets"
-          >
-            Job Sheets
-          </Link>
-          <Link
-            className={`hover:bg-gray-200 p-2 border-b ${
               location.pathname === "/employee"
                 ? "font-semibold text-blue-500"
                 : ""
@@ -74,6 +64,16 @@ export default function Sidebar( {open} ) {
             to="/employee"
           >
             Employee
+          </Link>
+          <Link
+            className={`hover:bg-gray-200 p-2 border-b ${
+              location.pathname.startsWith("/jobsheet")
+                ? "font-semibold text-blue-500"
+                : ""
+            }`}
+            to="/jobsheets"
+          >
+            Job Sheets
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
@@ -101,7 +101,7 @@ export default function Sidebar( {open} ) {
           </Link>
           <Link
             className={`hover:bg-gray-200 p-2 border-b ${
-              location.pathname === "/jobsheet"
+              location.pathname.startsWith("/jobsheet")
                 ? "font-semibold text-blue-500"
                 : ""
             }`}

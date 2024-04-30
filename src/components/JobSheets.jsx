@@ -38,7 +38,7 @@ const Example = () => {
   //   const [tempRow, setTempRow] = useState(null);
 
   const handleView = (row) => {
-    navigate("/jobsheets/view", { state: { row, admin:true } });
+    navigate("/jobsheet", { state: { row, admin:true } });
   };
 
   const columns = useMemo(
@@ -427,7 +427,7 @@ function useGetUsers() {
     queryKey: ["users"],
     queryFn: async () => {
       const response = await fetch(
-        "https://backend.tec.ampectech.com/api/jobsheets",
+        "https://backend.tec.ampectech.com/api/user/job-sheets",
         {
           method: "GET",
           headers: {
