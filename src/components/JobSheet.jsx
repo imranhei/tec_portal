@@ -5,21 +5,20 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogHeader,
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { clear } from "@testing-library/user-event/dist/clear";
 
 export default function JobSheet() {
   const navigate = useNavigate();
+  const [editable, setEditable] = useState(useSelector((state) => state.userNotification.editable));
   const { jobs } = useSelector((state) => state.currentJobs);
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [field, setField] = useState(null);
-  const [admin, setAdmin] = useState(false);
+  const [view, setView] = useState(false);
   const [textareaHeight, setTextareaHeight] = useState("50px");
   const [textareaHeight2, setTextareaHeight2] = useState("50px");
   const [dropDown, setDropDown] = useState({
@@ -46,23 +45,25 @@ export default function JobSheet() {
     reason: "",
     performed: "",
     materials: [{ quantity: "", description: "" }],
-    labor: {
-      leading: {
-        Nt: "",
-        shift: "",
-        ot: "",
+    labor: [
+      {
+        leading: {
+          Nt: "",
+          shift: "",
+          ot: "",
+        },
+        tradesman: {
+          Nt: "",
+          shift: "",
+          ot: "",
+        },
+        apprentice: {
+          Nt: "",
+          shift: "",
+          ot: "",
+        },
       },
-      tradesman: {
-        Nt: "",
-        shift: "",
-        ot: "",
-      },
-      apprentice: {
-        Nt: "",
-        shift: "",
-        ot: "",
-      },
-    },
+    ],
   });
 
   const handleInputChange = (index, e) => {
@@ -80,12 +81,13 @@ export default function JobSheet() {
     }
   }, []);
 
-  const location = useLocation(); 
+  const location = useLocation();
 
   useEffect(() => {
     if (location.state?.row) {
-      setAdmin(location.state?.admin);
+      setView(location.state?.view);
       setData(location.state?.row);
+      setEditable(location.state?.row);
     }
   }, [location]);
 
@@ -102,10 +104,12 @@ export default function JobSheet() {
     setData({ ...data, materials: list });
   };
 
-  const handleInputChange2 = (type, time, value) => {
-    const list = { ...data.labor };
-    list[type][time] = value;
-    setData({ ...data, labor: list });
+  const handleInputChange2 = (labourIndex, type, time, value) => {
+    const updatedLabour = [...data.labor]; // Create a copy of the labour array
+    const updatedLabourItem = { ...updatedLabour[labourIndex] }; // Create a copy of the specific labour item
+    updatedLabourItem[type][time] = value; // Update the value
+    updatedLabour[labourIndex] = updatedLabourItem; // Update the specific labour item in the array
+    setData({ ...data, labor: updatedLabour }); // Update the state with the new labour array
   };
 
   const componentRef = useRef();
@@ -212,36 +216,80 @@ export default function JobSheet() {
       reason: "",
       performed: "",
       materials: [{ quantity: "", description: "" }],
-      labor: {
-        leading: {
-          Nt: "",
-          shift: "",
-          ot: "",
+      labor: [
+        {
+          leading: {
+            Nt: "",
+            shift: "",
+            ot: "",
+          },
+          tradesman: {
+            Nt: "",
+            shift: "",
+            ot: "",
+          },
+          apprentice: {
+            Nt: "",
+            shift: "",
+            ot: "",
+          },
         },
-        tradesman: {
-          Nt: "",
-          shift: "",
-          ot: "",
-        },
-        apprentice: {
-          Nt: "",
-          shift: "",
-          ot: "",
-        },
-      },
+      ],
     });
-  }
+  };
+
+  const handleRequest = async () => {
+    try {
+      // const response = await fetch(
+      //   `https://backend.tec.ampectech.com/api/jobsheets/${data.id}`,
+      //   {
+      //     method: "PUT",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+      //     },
+      //     body: JSON.stringify({ editable: true }),
+      //   }
+      // );
+      // if (!response.ok) {
+      //   throw new Error("Failed to request edit");
+      // }
+
+      // alert("Request sent successfully");
+      console.log(data.id)
+      sessionStorage.setItem("request_job_sheet_id", data.id);
+    } catch (error) {
+      console.error("Error requesting edit:", error);
+      alert("Failed to request edit");
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {user?.role === "Electrician" && <div className="w-full flex justify-center px-4 gap-4">
-        <Button variant="outlined" className="hover:bg-black hover:text-white" size="sm" onClick={() => {navigate("/jobsheet"); setAdmin(false); clearForm()}}>
-          New Job Sheet
-        </Button>
-        <Button variant="outlined" className="hover:bg-black hover:text-white" size="sm" onClick={() => navigate("/jobsheets")}>
-          Previous Job Sheet
-        </Button>
-      </div>}
+      {user?.role === "Electrician" && (
+        <div className="w-full flex justify-center px-4 gap-4">
+          <Button
+            variant="outlined"
+            className="hover:bg-black hover:text-white"
+            size="sm"
+            onClick={() => {
+              navigate("/jobsheet");
+              setView(false);
+              clearForm();
+            }}
+          >
+            New Job Sheet
+          </Button>
+          <Button
+            variant="outlined"
+            className="hover:bg-black hover:text-white"
+            size="sm"
+            onClick={() => navigate("/jobsheets")}
+          >
+            Previous Job Sheet
+          </Button>
+        </div>
+      )}
       <div
         className="px-6 py-10 w-[700px] border print:border-none bg-white shadow print:shadow-none mx-auto text-sm"
         ref={componentRef}
@@ -282,10 +330,11 @@ export default function JobSheet() {
               <p>Store :</p>
               <input
                 type="text"
-                value={data?.store}
+                value={data?.store || ""}
                 list="store"
-                className="border-b outline-none focus:border-b-black pl-2 flex-1"
+                className="border-b outline-none focus:border-b-black pl-2 flex-1 bg-white"
                 onChange={(e) => setData({ ...data, store: e.target.value })}
+                disabled={editable}
               />
               <datalist id="store">
                 <option
@@ -299,7 +348,7 @@ export default function JobSheet() {
                   </option>
                 ))}
               </datalist>
-              {!admin && (
+              {!view && (
                 <Tooltip content="Add in the suggestion list">
                   <Button
                     disabled={false}
@@ -318,10 +367,11 @@ export default function JobSheet() {
               <p>Floor/Level :</p>
               <input
                 type="text"
-                value={data?.floor}
+                value={data?.floor || ""}
                 list="floor"
-                className="border-b outline-none focus:border-b-black pl-2 flex-1"
+                className="border-b outline-none focus:border-b-black pl-2 bg-white flex-1"
                 onChange={(e) => setData({ ...data, floor: e.target.value })}
+                disabled={editable}
               />
               <datalist id="floor">
                 <option
@@ -335,7 +385,7 @@ export default function JobSheet() {
                   </option>
                 ))}
               </datalist>
-              {!admin && (
+              {!view && (
                 <Tooltip content="Add in the suggestion list">
                   <Button
                     disabled={false}
@@ -355,10 +405,11 @@ export default function JobSheet() {
             <p>Department/Location :</p>
             <input
               type="text"
-              value={data?.location}
+              value={data?.location || ""}
               list="location"
-              className="border-b outline-none focus:border-b-black pl-2 flex-1"
+              className="border-b outline-none focus:border-b-black bg-white pl-2 flex-1"
               onChange={(e) => setData({ ...data, location: e.target.value })}
+              disabled={editable}
             />
             <datalist id="location">
               <option value="" style={{ opacity: 0.25 }} className=""></option>
@@ -368,7 +419,7 @@ export default function JobSheet() {
                 </option>
               ))}
             </datalist>
-            {!admin && (
+            {!view && (
               <Tooltip content="Add in the suggestion list">
                 <Button
                   disabled={false}
@@ -388,10 +439,11 @@ export default function JobSheet() {
               <p>Job No :</p>
               <input
                 type="text"
-                value={data?.job_no}
+                value={data?.job_no || ""}
                 list="jobNumbers"
-                className="border-b outline-none focus:border-b-black pl-2 flex-1"
+                className="border-b outline-none focus:border-b-black bg-white pl-2 flex-1"
                 onChange={(e) => setData({ ...data, job_no: e.target.value })}
+                disabled={editable}
               />
               <datalist id="jobNumbers">
                 <option
@@ -410,12 +462,13 @@ export default function JobSheet() {
               <p>Work Authorised By :</p>
               <input
                 type="text"
-                value={data?.work_authorised_by}
+                value={data?.work_authorised_by || ""}
                 list="work_authorised_by"
-                className="border-b outline-none focus:border-b-black pl-2 w-40"
+                className="border-b outline-none focus:border-b-black bg-white pl-2 w-40"
                 onChange={(e) =>
                   setData({ ...data, work_authorised_by: e.target.value })
                 }
+                disabled={editable}
               />
               <datalist id="work_authorised_by">
                 <option
@@ -429,7 +482,7 @@ export default function JobSheet() {
                   </option>
                 ))}
               </datalist>
-              {!admin && (
+              {!view && (
                 <Tooltip content="Add in the suggestion list">
                   <Button
                     disabled={false}
@@ -448,39 +501,42 @@ export default function JobSheet() {
           <div className="flex w-full">
             <p>Date Work Performed :</p>
             <input
-              value={data?.date}
+              value={data?.date || ""}
               type="date"
-              className={`border-b outline-none focus:border-b-black pl-2 flex-1 ${
+              className={`border-b outline-none focus:border-b-black bg-white pl-2 flex-1 ${
                 data?.date ? "" : "opacity-50"
               }`}
               onChange={(e) => setData({ ...data, date: e.target.value })}
+              disabled={editable}
             />
           </div>
           <div className="w-full">
             <p>Reason Work was Carried Out :</p>
             <textarea
-              value={data?.reason}
+              value={data?.reason || ""}
               style={{ height: textareaHeight }}
               type="text"
-              className="border-b outline-none focus:border-b-black w-full"
+              className="border-b outline-none focus:border-b-black bg-white w-full"
               onChange={(e) => {
                 handleHeight(e);
                 setData({ ...data, reason: e.target.value });
               }}
+              disabled={editable}
             />
           </div>
           <h1 className="underline">Description of Work</h1>
           <div className="w-full">
             <p>Performed :</p>
             <textarea
-              value={data?.performed}
+              value={data?.performed || ""}
               style={{ height: textareaHeight2 }}
               type="text"
-              className="border-b outline-none focus:border-b-black w-full"
+              className="border-b outline-none focus:border-b-black bg-white w-full"
               onChange={(e) => {
                 handleHeight2(e);
                 setData({ ...data, performed: e.target.value });
               }}
+              disabled={editable}
             />
           </div>
           <div className="h-4"></div>
@@ -505,21 +561,23 @@ export default function JobSheet() {
                     <input
                       type="number"
                       name="quantity"
-                      value={row.quantity}
+                      value={row.quantity || ""}
                       onChange={(e) => handleInputChange(index, e)}
-                      className="w-full outline-none focus:bg-gray-200 px-2 py-1 text-center"
+                      className="w-full outline-none focus:bg-gray-200 bg-white px-2 py-1 text-center"
+                      disabled={editable}
                     />
                   </td>
                   <td className="border border-gray-400">
                     <input
                       type="text"
                       name="description"
-                      value={row.description}
+                      value={row.description || ""}
                       onChange={(e) => handleInputChange(index, e)}
-                      className="w-full outline-none focus:bg-gray-200 py-1 px-1"
+                      className="w-full outline-none focus:bg-gray-200 bg-white py-1 px-1"
+                      disabled={editable}
                     />
                   </td>
-                  {!admin && (
+                  {!view && (
                     <td className="border border-gray-400 w-8 print:hidden">
                       <button
                         className="text-red-400 hover:text-red-500"
@@ -543,7 +601,7 @@ export default function JobSheet() {
               ))}
             </tbody>
           </table>
-          {!admin && (
+          {!view && (
             <Button
               size="sm"
               onClick={addRow}
@@ -575,30 +633,37 @@ export default function JobSheet() {
               </tr>
             </thead>
             <tbody>
-              {["Nt", "shift", "ot"].map((time) => (
-                <tr key={time}>
-                  {["leading", "tradesman", "apprentice"].map((type) => (
-                    <React.Fragment key={`${type}-${time}`}>
-                      <td key={type} className="border border-gray-400 px-1">
-                        {time.toUpperCase()}
-                      </td>
-                      <td
-                        key={`${type}-${time}-input`}
-                        className="border border-gray-400"
-                      >
-                        <input
-                          type="number"
-                          name={time}
-                          value={data?.labor?.[type]?.[time] || ""} // Add null checks
-                          onChange={(e) =>
-                            handleInputChange2(type, time, e.target.value)
-                          }
-                          className="w-full outline-none focus:bg-gray-200 py-1 px-1"
-                        />
-                      </td>
-                    </React.Fragment>
+              {data?.labor?.map((labourItem, labourIndex) => (
+                <React.Fragment key={labourIndex}>
+                  {["Nt", "shift", "ot"].map((time) => (
+                    <tr key={`${labourIndex}-${time}`}>
+                      {Object.keys(labourItem).map((type) => (
+                        <React.Fragment key={`${type}-${time}`}>
+                          <td className="border border-gray-400 px-1">
+                            {time.toUpperCase()}
+                          </td>
+                          <td className="border border-gray-400">
+                            <input
+                              type="number"
+                              name={time}
+                              value={labourItem[type][time] || ""}
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  labourIndex,
+                                  type,
+                                  time,
+                                  e.target.value
+                                )
+                              }
+                              disabled={editable}
+                              className="w-full outline-none focus:bg-gray-200 bg-white py-1 px-1"
+                            />
+                          </td>
+                        </React.Fragment>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -611,14 +676,16 @@ export default function JobSheet() {
           >
             Print
           </IconButton>
-          {admin && user?.role === "Electrician" && <Button
-            size="sm"
-            onClick={handlePrint}
-            className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 w-36 px-4 rounded print:hidden"
-          >
-            Request to edit
-          </Button>}
-          {!admin && (
+          {view && user?.role === "Electrician" && (
+            <Button
+              size="sm"
+              onClick={handleRequest}
+              className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 w-36 px-4 rounded print:hidden"
+            >
+              Request to edit
+            </Button>
+          )}
+          {!view && (
             <IconButton
               size="sm"
               onClick={handleSave}

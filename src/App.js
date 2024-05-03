@@ -92,14 +92,14 @@ function App() {
             <Sidebar open={open} />
           </div>
           <div
-            className={`fixed md:h-14 h-10 w-screen z-10 flex items-center  bg-white shadow-md`}
+            className={`fixed md:h-14 h-10 w-full z-10 flex items-center bg-white shadow`}
           >
             <Navbar />
           </div>
         </>
       )}
       <div
-        className={`flex-1 overflow-auto transition-all md:mt-14 mt-10 ${
+        className={`flex-1 overflow-auto transition-all md:mt-14 mt-10 z-0 ${
           isLoggedIn() ? "md:ml-48 ml-10" : "ml-0"
         } p-4 bg-slate-100`}
       >

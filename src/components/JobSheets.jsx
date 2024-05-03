@@ -38,7 +38,7 @@ const Example = () => {
   //   const [tempRow, setTempRow] = useState(null);
 
   const handleView = (row) => {
-    navigate("/jobsheet", { state: { row, admin:true } });
+    navigate("/jobsheet", { state: { row, view:true } });
   };
 
   const columns = useMemo(
