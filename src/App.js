@@ -18,6 +18,7 @@ function App() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [worker, setWorker] = useState(null);
 
   function isLoggedIn() {
     const accessToken = sessionStorage.getItem("access_token");

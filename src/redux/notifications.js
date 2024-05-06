@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const userNotification = createSlice({
   name: "userNotification",
   initialState: {
-    notification: false,
+    notification: [],
     editable: false,
   },
   reducers: {

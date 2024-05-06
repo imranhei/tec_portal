@@ -240,24 +240,21 @@ export default function JobSheet() {
 
   const handleRequest = async () => {
     try {
-      // const response = await fetch(
-      //   `https://backend.tec.ampectech.com/api/jobsheets/${data.id}`,
-      //   {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
-      //     },
-      //     body: JSON.stringify({ editable: true }),
-      //   }
-      // );
-      // if (!response.ok) {
-      //   throw new Error("Failed to request edit");
-      // }
+      const response = await fetch(
+        `https://backend.tec.ampectech.com/api/notifications/${data.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to request edit");
+      }
 
-      // alert("Request sent successfully");
-      console.log(data.id)
-      sessionStorage.setItem("request_job_sheet_id", data.id);
+      alert("Request sent successfully");
     } catch (error) {
       console.error("Error requesting edit:", error);
       alert("Failed to request edit");

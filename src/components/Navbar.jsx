@@ -6,6 +6,7 @@ import {
   Button,
   Typography,
   IconButton,
+  Tooltip,
 } from "@material-tailwind/react";
 
 export default function Navbar() {
@@ -17,6 +18,11 @@ export default function Navbar() {
 
   const [open, setOpen] = React.useState(false); //notifications
 
+  // Create a new web worker
+  
+  // To terminate the worker when no longer needed
+  // worker.terminate();
+
   useEffect(() => {
     const userData = sessionStorage.getItem("user");
     if (userData) {
@@ -25,15 +31,61 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    // notification
-    const response = sessionStorage.getItem("request_job_sheet_id");
-    console.log(response);
-    if (response && response !== "null") {
-      dispatch(setNotification(true));
+    if (user?.role === "Admin" || user?.role === "Super Admin") {
+      fetchAdminNotification();
+    } else {
+      fetchUserNotification();
     }
-    sessionStorage.setItem("request_job_sheet_id", response);
-    console.log(notification);
-  }, [notification]);
+  }, [user]);
+
+  const fetchAdminNotification = async () => {
+    // fetch notification from the server
+    const response = await fetch(
+      "http://backend.tec.ampectech.com/api/allunread",
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+        },
+      }
+    );
+    const data = await response.json();
+    dispatch(setNotification(data?.notifications));
+  };
+
+  const fetchUserNotification = async () => {
+    // fetch notification from the server
+    const response = await fetch(
+      "http://backend.tec.ampectech.com/api/approvenotifications",
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+        },
+      }
+    );
+    const data = await response.json();
+    dispatch(setNotification(data?.read_notifications));
+  };
+
+  const handleApproved = async (id) => {
+    const response = await fetch(
+      `http://backend.tec.ampectech.com/api/markasread/${id}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+  };
+
+  const handleEdit = async (id) => {
+    console.log(id);
+  };
 
   // notification related functionality
   const openDrawer = () => setOpen(true);
@@ -43,7 +95,7 @@ export default function Navbar() {
     <div className="flex w-full items-center justify-end gap-5 px-6">
       <React.Fragment>
         <div className="relative cursor-pointer" onClick={openDrawer}>
-          {notification && (
+          {notification?.length > 0 && (
             <div className="absolute -right-0.5 -top-0.5">
               <span className="relative flex h-2 w-2 items-center justify-center">
                 <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
@@ -66,10 +118,15 @@ export default function Navbar() {
             </g>
           </svg>
         </div>
-        <Drawer placement="right" open={open} onClose={closeDrawer} className="p-4">
+        <Drawer
+          placement="right"
+          open={open}
+          onClose={closeDrawer}
+          className="p-4"
+        >
           <div className="mb-6 flex items-center justify-between">
             <Typography variant="h5" color="blue-gray">
-              Material Tailwind
+              Notifications
             </Typography>
             <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
               <svg
@@ -88,19 +145,91 @@ export default function Navbar() {
               </svg>
             </IconButton>
           </div>
-          <Typography color="gray" className="mb-8 pr-4 font-normal">
-            Material Tailwind features multiple React and HTML components, all
-            written with Tailwind CSS classes and Material Design guidelines.
-          </Typography>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outlined">
-              Documentation
-            </Button>
-            <Button size="sm">Get Started</Button>
-          </div>
+          {user?.role === "Admin" || user?.role === "Super Admin" ? (
+            <div className="flex flex-col mb-4 border-t">
+              {notification?.map((notif) => (
+                <div
+                  key={notif.id}
+                  className="py-px flex justify-between items-center border-b"
+                >
+                  <div className="py-1 cursor-pointer text-sm">
+                    <span className="font-semibold">{notif?.user_name}</span>{" "}
+                    wants to modify this Job Id:{" "}
+                    <span className="font-semibold">
+                      {notif?.data?.job_sheets_id}
+                    </span>
+                  </div>
+                  <div className="flex">
+                    <Tooltip content="Approved">
+                      <button
+                        className="hover:bg-gray-200 rounded-full p-1"
+                        onClick={() => handleApproved(notif.id)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill="#59f556"
+                            d="m14.83 4.89l1.34.94l-5.81 8.38H9.02L5.78 9.67l1.34-1.25l2.57 2.4z"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Reject">
+                      <button className="hover:bg-gray-200 rounded-full p-1" 
+                      onClick={() => handleEdit(notif.id)}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill="#ff4747"
+                            d="M14.95 6.46L11.41 10l3.54 3.54l-1.41 1.41L10 11.42l-3.53 3.53l-1.42-1.42L8.58 10L5.05 6.47l1.42-1.42L10 8.58l3.54-3.53z"
+                          />
+                        </svg>
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mb-4">
+              {notification?.map((notif) => (
+                <div className="flex justify-between font-sm">
+                  <p>
+                    This Job Id {notif.data?.job_sheets_id} is appreved to edit
+                  </p>
+                  <Tooltip content="View">
+                    <button className="hover:bg-gray-200 rounded-full p-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 32 32"
+                      >
+                        <circle cx="16" cy="16" r="4" fill="#00e6cb" />
+                        <path
+                          fill="#00e6cb"
+                          d="M30.94 15.66A16.69 16.69 0 0 0 16 5A16.69 16.69 0 0 0 1.06 15.66a1 1 0 0 0 0 .68A16.69 16.69 0 0 0 16 27a16.69 16.69 0 0 0 14.94-10.66a1 1 0 0 0 0-.68M16 22.5a6.5 6.5 0 1 1 6.5-6.5a6.51 6.51 0 0 1-6.5 6.5"
+                        />
+                      </svg>
+                    </button>
+                  </Tooltip>
+                </div>
+              ))}
+            </div>
+          )}
+          <Button size="sm">See All Notifications</Button>
         </Drawer>
       </React.Fragment>
       <p>{user?.name}</p>
+      <p>{notification?.length}</p>
     </div>
   );
 }
